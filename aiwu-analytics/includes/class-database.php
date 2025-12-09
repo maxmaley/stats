@@ -237,17 +237,23 @@ class AIWU_Analytics_Database {
              WHERE s1.is_pro = 1
              AND s1.created BETWEEN %s AND %s
              AND EXISTS (
-                 SELECT 1 FROM {$this->stats_table} s2 
-                 WHERE s2.email = s1.email 
-                 AND s2.is_pro = 0 
+                 SELECT 1 FROM {$this->stats_table} s2
+                 WHERE s2.email = s1.email
+                 AND s2.is_pro = 0
                  AND s2.created < s1.created
+             )
+             AND NOT EXISTS (
+                 SELECT 1 FROM {$this->stats_table} s3
+                 WHERE s3.email = s1.email
+                 AND s3.is_pro = 1
+                 AND s3.created < s1.created
              )
              GROUP BY DATE(s1.created)
              ORDER BY date ASC",
             $date_from,
             $date_to
         );
-        
+
         return $this->wpdb->get_results($query, ARRAY_A);
     }
     
