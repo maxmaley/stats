@@ -417,11 +417,15 @@ class AIWU_Analytics_Database {
 
             $data = $this->wpdb->get_row($query, ARRAY_A);
 
+            // Handle NULL result (no data for this feature)
+            $user_count = $data ? (int) $data['user_count'] : 0;
+            $total_tokens = $data ? (int) $data['total_tokens'] : 0;
+
             $results[] = array(
                 'feature' => $feature_name,
                 'token_name' => $token_name,
-                'user_count' => (int) $data['user_count'],
-                'total_tokens' => (int) $data['total_tokens']
+                'user_count' => $user_count,
+                'total_tokens' => $total_tokens
             );
         }
 

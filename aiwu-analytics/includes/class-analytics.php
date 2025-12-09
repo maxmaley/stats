@@ -350,6 +350,7 @@ class AIWU_Analytics_Calculator {
     /**
      * Calculate user segments by activity
      * FIXED: Group by email (unique users) instead of st_id (records)
+     * Uses optimized query with INNER JOIN to get latest stats per user
      */
     private function calculate_user_segments() {
         global $wpdb;
@@ -357,15 +358,17 @@ class AIWU_Analytics_Calculator {
         $details_table = $wpdb->prefix . 'lms_stats_details';
 
         // Get latest stats for each user with their total tokens
+        // Using JOIN with subquery to get max id per user
         $query = "SELECT s.email, SUM(d.val_int) as total_tokens
                   FROM {$details_table} d
-                  JOIN {$stats_table} s ON d.st_id = s.id
-                  WHERE d.name LIKE 'tokens_%'
-                  AND s.id IN (
-                      SELECT MAX(id) FROM {$stats_table}
+                  INNER JOIN {$stats_table} s ON d.st_id = s.id
+                  INNER JOIN (
+                      SELECT email, MAX(id) as max_id
+                      FROM {$stats_table}
                       WHERE mode = 0
                       GROUP BY email
-                  )
+                  ) latest ON s.email = latest.email AND s.id = latest.max_id
+                  WHERE d.name LIKE 'tokens_%'
                   GROUP BY s.email";
 
         $results = $wpdb->get_results($query, ARRAY_A);
@@ -416,6 +419,7 @@ class AIWU_Analytics_Calculator {
     /**
      * Calculate multi-feature usage
      * FIXED: Group by email (unique users) instead of st_id (records)
+     * Uses optimized query with INNER JOIN to get latest stats per user
      */
     private function calculate_multi_feature_usage() {
         global $wpdb;
@@ -423,15 +427,17 @@ class AIWU_Analytics_Calculator {
         $details_table = $wpdb->prefix . 'lms_stats_details';
 
         // Count how many features each unique user uses (from their latest stats)
+        // Using JOIN with subquery to get max id per user
         $query = "SELECT s.email, COUNT(DISTINCT d.name) as feature_count
                   FROM {$details_table} d
-                  JOIN {$stats_table} s ON d.st_id = s.id
-                  WHERE d.name LIKE 'tokens_%' AND d.val_int > 0
-                  AND s.id IN (
-                      SELECT MAX(id) FROM {$stats_table}
+                  INNER JOIN {$stats_table} s ON d.st_id = s.id
+                  INNER JOIN (
+                      SELECT email, MAX(id) as max_id
+                      FROM {$stats_table}
                       WHERE mode = 0
                       GROUP BY email
-                  )
+                  ) latest ON s.email = latest.email AND s.id = latest.max_id
+                  WHERE d.name LIKE 'tokens_%' AND d.val_int > 0
                   GROUP BY s.email";
 
         $results = $wpdb->get_results($query, ARRAY_A);
