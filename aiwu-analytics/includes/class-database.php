@@ -97,7 +97,119 @@ class AIWU_Analytics_Database {
 
         return (int) $this->wpdb->get_var($query);
     }
-    
+
+    /**
+     * Get active FREE users (users with is_pro=0 only)
+     */
+    public function get_active_free_users($date_from = '', $date_to = '') {
+        if (empty($date_from) || empty($date_to)) {
+            $query = "SELECT COUNT(DISTINCT s.email)
+                      FROM {$this->stats_table} s
+                      WHERE s.mode = 0
+                      AND EXISTS (
+                          SELECT 1 FROM {$this->stats_table} s2
+                          WHERE s2.email = s.email AND s2.mode = 1
+                      )
+                      AND NOT EXISTS (
+                          SELECT 1 FROM {$this->stats_table} s3
+                          WHERE s3.email = s.email
+                          AND s3.mode = 2
+                          AND s3.created > (
+                              SELECT MAX(created) FROM {$this->stats_table} s4
+                              WHERE s4.email = s.email AND s4.mode = 1
+                          )
+                      )
+                      AND NOT EXISTS (
+                          SELECT 1 FROM {$this->stats_table} s5
+                          WHERE s5.email = s.email AND s5.is_pro = 1
+                      )";
+            return (int) $this->wpdb->get_var($query);
+        }
+
+        $query = $this->wpdb->prepare(
+            "SELECT COUNT(DISTINCT s.email) as total
+             FROM {$this->stats_table} s
+             WHERE s.mode = 0
+             AND s.created BETWEEN %s AND %s
+             AND EXISTS (
+                 SELECT 1 FROM {$this->stats_table} s2
+                 WHERE s2.email = s.email AND s2.mode = 1
+             )
+             AND NOT EXISTS (
+                 SELECT 1 FROM {$this->stats_table} s3
+                 WHERE s3.email = s.email
+                 AND s3.mode = 2
+                 AND s3.created > (
+                     SELECT MAX(created) FROM {$this->stats_table} s4
+                     WHERE s4.email = s.email AND s4.mode = 1
+                 )
+             )
+             AND NOT EXISTS (
+                 SELECT 1 FROM {$this->stats_table} s5
+                 WHERE s5.email = s.email AND s5.is_pro = 1
+             )",
+            $date_from, $date_to
+        );
+
+        return (int) $this->wpdb->get_var($query);
+    }
+
+    /**
+     * Get active PRO users (users with is_pro=1, includes FREE+PRO)
+     */
+    public function get_active_pro_users($date_from = '', $date_to = '') {
+        if (empty($date_from) || empty($date_to)) {
+            $query = "SELECT COUNT(DISTINCT s.email)
+                      FROM {$this->stats_table} s
+                      WHERE s.mode = 0
+                      AND EXISTS (
+                          SELECT 1 FROM {$this->stats_table} s2
+                          WHERE s2.email = s.email AND s2.mode = 1
+                      )
+                      AND NOT EXISTS (
+                          SELECT 1 FROM {$this->stats_table} s3
+                          WHERE s3.email = s.email
+                          AND s3.mode = 2
+                          AND s3.created > (
+                              SELECT MAX(created) FROM {$this->stats_table} s4
+                              WHERE s4.email = s.email AND s4.mode = 1
+                          )
+                      )
+                      AND EXISTS (
+                          SELECT 1 FROM {$this->stats_table} s5
+                          WHERE s5.email = s.email AND s5.is_pro = 1
+                      )";
+            return (int) $this->wpdb->get_var($query);
+        }
+
+        $query = $this->wpdb->prepare(
+            "SELECT COUNT(DISTINCT s.email) as total
+             FROM {$this->stats_table} s
+             WHERE s.mode = 0
+             AND s.created BETWEEN %s AND %s
+             AND EXISTS (
+                 SELECT 1 FROM {$this->stats_table} s2
+                 WHERE s2.email = s.email AND s2.mode = 1
+             )
+             AND NOT EXISTS (
+                 SELECT 1 FROM {$this->stats_table} s3
+                 WHERE s3.email = s.email
+                 AND s3.mode = 2
+                 AND s3.created > (
+                     SELECT MAX(created) FROM {$this->stats_table} s4
+                     WHERE s4.email = s.email AND s4.mode = 1
+                 )
+             )
+             AND EXISTS (
+                 SELECT 1 FROM {$this->stats_table} s5
+                 WHERE s5.email = s.email AND s5.is_pro = 1
+             )",
+            $date_from, $date_to
+        );
+
+        return (int) $this->wpdb->get_var($query);
+    }
+
     /**
      * Get conversion rate Free->Pro
      * FIXED: Proper conversion = conversions in period / free users at start of period

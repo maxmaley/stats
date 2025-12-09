@@ -90,9 +90,17 @@ if (!defined('ABSPATH')) {
 
         <div class="kpi-card">
             <div class="kpi-content">
-                <div class="kpi-label">Active Users</div>
-                <div class="kpi-value" id="kpi-active">-</div>
-                <div class="kpi-change" id="kpi-active-change">-</div>
+                <div class="kpi-label">Active Free Users</div>
+                <div class="kpi-value" id="kpi-active-free">-</div>
+                <div class="kpi-change" id="kpi-active-free-change">-</div>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-content">
+                <div class="kpi-label">Active Pro Users</div>
+                <div class="kpi-value" id="kpi-active-pro">-</div>
+                <div class="kpi-change" id="kpi-active-pro-change">-</div>
             </div>
         </div>
 
@@ -112,28 +120,6 @@ if (!defined('ABSPATH')) {
         </div>
         <div class="chart-container large" style="height: 400px !important; max-height: 400px !important; overflow: hidden !important;">
             <canvas id="conversion-timeline-chart"></canvas>
-        </div>
-    </div>
-
-    <!-- Time to Convert & Recent Conversions -->
-    <div class="aiwu-grid-2">
-        <div class="aiwu-section">
-            <div class="section-header">
-                <h3>Time to Conversion</h3>
-            </div>
-            <div class="chart-container" style="height: 300px !important; max-height: 300px !important; overflow: hidden !important;">
-                <canvas id="time-to-convert-chart"></canvas>
-            </div>
-        </div>
-
-        <div class="aiwu-section">
-            <div class="section-header">
-                <h3>Conversion Triggers</h3>
-                <p class="section-subtitle">What users did before upgrading to Pro</p>
-            </div>
-            <div class="table-container" id="recent-conversions-table">
-                <!-- Table will be populated by JS -->
-            </div>
         </div>
     </div>
 

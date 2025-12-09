@@ -56,20 +56,22 @@ class AIWU_Analytics_Calculator {
     private function get_kpi_metrics($date_from, $date_to) {
         // Get current period data
         $current_installations = $this->db->get_total_installations($date_from, $date_to);
-        $current_active = $this->db->get_active_users($date_from, $date_to);
+        $current_active_free = $this->db->get_active_free_users($date_from, $date_to);
+        $current_active_pro = $this->db->get_active_pro_users($date_from, $date_to);
         $current_conversion = $this->db->get_conversion_data($date_from, $date_to);
         $current_churn = $this->db->get_churn_rate($date_from, $date_to);
-        
+
         // Calculate previous period for comparison
         $days_diff = (strtotime($date_to) - strtotime($date_from)) / 86400;
         $prev_date_to = date('Y-m-d', strtotime($date_from . ' -1 day'));
         $prev_date_from = date('Y-m-d', strtotime($prev_date_to . ' -' . $days_diff . ' days'));
-        
+
         $prev_installations = $this->db->get_total_installations($prev_date_from, $prev_date_to);
-        $prev_active = $this->db->get_active_users($prev_date_from, $prev_date_to);
+        $prev_active_free = $this->db->get_active_free_users($prev_date_from, $prev_date_to);
+        $prev_active_pro = $this->db->get_active_pro_users($prev_date_from, $prev_date_to);
         $prev_conversion = $this->db->get_conversion_data($prev_date_from, $prev_date_to);
         $prev_churn = $this->db->get_churn_rate($prev_date_from, $prev_date_to);
-        
+
         return array(
             'installations' => array(
                 'value' => $current_installations,
@@ -81,10 +83,15 @@ class AIWU_Analytics_Calculator {
                 'change' => $this->calculate_percentage_change($prev_conversion['conversion_rate'], $current_conversion['conversion_rate']),
                 'trend' => $this->generate_mini_trend($date_from, $date_to, 'conversion')
             ),
-            'active_users' => array(
-                'value' => $current_active,
-                'change' => $this->calculate_percentage_change($prev_active, $current_active),
-                'trend' => $this->generate_mini_trend($date_from, $date_to, 'active')
+            'active_free_users' => array(
+                'value' => $current_active_free,
+                'change' => $this->calculate_percentage_change($prev_active_free, $current_active_free),
+                'trend' => $this->generate_mini_trend($date_from, $date_to, 'active_free')
+            ),
+            'active_pro_users' => array(
+                'value' => $current_active_pro,
+                'change' => $this->calculate_percentage_change($prev_active_pro, $current_active_pro),
+                'trend' => $this->generate_mini_trend($date_from, $date_to, 'active_pro')
             ),
             'churn_rate' => array(
                 'value' => $current_churn['churn_rate'],

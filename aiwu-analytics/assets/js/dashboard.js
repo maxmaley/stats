@@ -137,9 +137,13 @@
             $('#kpi-conversion').text(kpi.conversion_rate.value + '%');
             this.updateKPIChange('#kpi-conversion-change', kpi.conversion_rate.change);
 
-            // Active Users
-            $('#kpi-active').text(kpi.active_users.value.toLocaleString());
-            this.updateKPIChange('#kpi-active-change', kpi.active_users.change);
+            // Active Free Users
+            $('#kpi-active-free').text(kpi.active_free_users.value.toLocaleString());
+            this.updateKPIChange('#kpi-active-free-change', kpi.active_free_users.change);
+
+            // Active Pro Users
+            $('#kpi-active-pro').text(kpi.active_pro_users.value.toLocaleString());
+            this.updateKPIChange('#kpi-active-pro-change', kpi.active_pro_users.change);
 
             // Churn Rate
             $('#kpi-churn').text(kpi.churn_rate.value + '%');
@@ -201,15 +205,9 @@
          */
         renderConversionCharts: function() {
             const conv = this.data.conversion;
-            
+
             // Conversion Timeline
             this.renderConversionTimeline(conv.timeline);
-            
-            // Time to Convert
-            this.renderTimeToConvert(conv.time_to_convert);
-            
-            // Recent Conversions Table
-            this.renderRecentConversions(conv.recent_conversions);
         },
         
         /**
