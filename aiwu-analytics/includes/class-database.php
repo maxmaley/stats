@@ -493,17 +493,17 @@ class AIWU_Analytics_Database {
      * Get deactivation reasons
      */
     public function get_deactivation_reasons() {
-        $query = "SELECT 
+        // Group only by reason code to avoid duplicates
+        $query = "SELECT
                     d.val_int as reason_code,
-                    d.val_text as reason_text,
                     COUNT(*) as count
                   FROM {$this->details_table} d
                   WHERE d.name = 'reason'
-                  GROUP BY d.val_int, d.val_text
+                  GROUP BY d.val_int
                   ORDER BY count DESC";
-        
+
         $results = $this->wpdb->get_results($query, ARRAY_A);
-        
+
         // Map reason codes to text
         $reason_map = array(
             -1 => 'Not specified',
@@ -514,16 +514,16 @@ class AIWU_Analytics_Database {
             4 => 'Missing features in the free version',
             5 => 'Other'
         );
-        
+
         $formatted = array();
         foreach ($results as $row) {
             $code = (int) $row['reason_code'];
             $formatted[] = array(
-                'reason' => isset($reason_map[$code]) ? $reason_map[$code] : $row['reason_text'],
+                'reason' => isset($reason_map[$code]) ? $reason_map[$code] : 'Unknown',
                 'count' => (int) $row['count']
             );
         }
-        
+
         return $formatted;
     }
     
