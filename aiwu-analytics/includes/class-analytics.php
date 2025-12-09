@@ -262,51 +262,76 @@ class AIWU_Analytics_Calculator {
     
     /**
      * Calculate churn rate by plan
+     * FIXED: Proper churn = deactivations in period / active users at start of period (by plan)
      */
     private function calculate_churn_by_plan($date_from, $date_to) {
         global $wpdb;
         $stats_table = $wpdb->prefix . 'lms_stats';
-        
-        // Free users churn
-        $free_total = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT email) FROM {$stats_table} 
-             WHERE mode = 1 AND is_pro = 0 
-             AND created BETWEEN %s AND %s",
-            $date_from, $date_to
+
+        // Free users active at start of period
+        $free_active_at_start = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(DISTINCT email) FROM {$stats_table}
+             WHERE email IN (
+                 SELECT email FROM {$stats_table} WHERE mode = 1 AND is_pro = 0 AND created < %s
+             )
+             AND email NOT IN (
+                 SELECT email FROM {$stats_table} WHERE mode = 2 AND created < %s
+             )
+             AND email NOT IN (
+                 SELECT email FROM {$stats_table} WHERE is_pro = 1 AND created < %s
+             )",
+            $date_from, $date_from, $date_from
         ));
-        
+
         $free_churned = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT email) FROM {$stats_table} 
-             WHERE mode = 2 AND is_pro = 0 
+            "SELECT COUNT(DISTINCT email) FROM {$stats_table}
+             WHERE mode = 2 AND is_pro = 0
              AND created BETWEEN %s AND %s",
             $date_from, $date_to
         ));
-        
-        // Pro users churn
-        $pro_total = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT email) FROM {$stats_table} 
-             WHERE mode = 1 AND is_pro = 1 
-             AND created BETWEEN %s AND %s",
-            $date_from, $date_to
+
+        // Pro users active at start of period
+        $pro_active_at_start = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(DISTINCT email) FROM {$stats_table}
+             WHERE email IN (
+                 SELECT email FROM {$stats_table} WHERE is_pro = 1 AND created < %s
+             )
+             AND email NOT IN (
+                 SELECT email FROM {$stats_table} WHERE mode = 2 AND created < %s
+             )",
+            $date_from, $date_from
         ));
-        
+
         $pro_churned = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT email) FROM {$stats_table} 
-             WHERE mode = 2 AND is_pro = 1 
+            "SELECT COUNT(DISTINCT email) FROM {$stats_table}
+             WHERE mode = 2 AND is_pro = 1
              AND created BETWEEN %s AND %s",
             $date_from, $date_to
         ));
-        
+
+        $free_rate = $free_active_at_start > 0 ? ($free_churned / $free_active_at_start) * 100 : 0;
+        $pro_rate = $pro_active_at_start > 0 ? ($pro_churned / $pro_active_at_start) * 100 : 0;
+
+        // Validate rates
+        if ($free_rate > 100) {
+            error_log('AIWU Analytics: Invalid free churn rate: ' . $free_rate);
+            $free_rate = 100;
+        }
+        if ($pro_rate > 100) {
+            error_log('AIWU Analytics: Invalid pro churn rate: ' . $pro_rate);
+            $pro_rate = 100;
+        }
+
         return array(
             'free' => array(
-                'total' => (int) $free_total,
+                'active_at_start' => (int) $free_active_at_start,
                 'churned' => (int) $free_churned,
-                'rate' => $free_total > 0 ? round(($free_churned / $free_total) * 100, 2) : 0
+                'rate' => round($free_rate, 2)
             ),
             'pro' => array(
-                'total' => (int) $pro_total,
+                'active_at_start' => (int) $pro_active_at_start,
                 'churned' => (int) $pro_churned,
-                'rate' => $pro_total > 0 ? round(($pro_churned / $pro_total) * 100, 2) : 0
+                'rate' => round($pro_rate, 2)
             )
         );
     }
@@ -324,29 +349,37 @@ class AIWU_Analytics_Calculator {
     
     /**
      * Calculate user segments by activity
+     * FIXED: Group by email (unique users) instead of st_id (records)
      */
     private function calculate_user_segments() {
         global $wpdb;
+        $stats_table = $wpdb->prefix . 'lms_stats';
         $details_table = $wpdb->prefix . 'lms_stats_details';
-        
-        // Get all users with their total tokens
-        $query = "SELECT st_id, SUM(val_int) as total_tokens
-                  FROM {$details_table}
-                  WHERE name LIKE 'tokens_%'
-                  GROUP BY st_id";
-        
+
+        // Get latest stats for each user with their total tokens
+        $query = "SELECT s.email, SUM(d.val_int) as total_tokens
+                  FROM {$details_table} d
+                  JOIN {$stats_table} s ON d.st_id = s.id
+                  WHERE d.name LIKE 'tokens_%'
+                  AND s.id IN (
+                      SELECT MAX(id) FROM {$stats_table}
+                      WHERE mode = 0
+                      GROUP BY email
+                  )
+                  GROUP BY s.email";
+
         $results = $wpdb->get_results($query, ARRAY_A);
-        
+
         $segments = array(
             'dead' => 0,      // 0 tokens
             'light' => 0,     // 1-10K
             'medium' => 0,    // 10-100K
             'heavy' => 0      // 100K+
         );
-        
+
         foreach ($results as $row) {
             $tokens = (int) $row['total_tokens'];
-            
+
             if ($tokens === 0) {
                 $segments['dead']++;
             } elseif ($tokens <= 10000) {
@@ -357,9 +390,9 @@ class AIWU_Analytics_Calculator {
                 $segments['heavy']++;
             }
         }
-        
+
         $total = array_sum($segments);
-        
+
         return array(
             'dead' => array(
                 'count' => $segments['dead'],
@@ -382,29 +415,37 @@ class AIWU_Analytics_Calculator {
     
     /**
      * Calculate multi-feature usage
+     * FIXED: Group by email (unique users) instead of st_id (records)
      */
     private function calculate_multi_feature_usage() {
         global $wpdb;
+        $stats_table = $wpdb->prefix . 'lms_stats';
         $details_table = $wpdb->prefix . 'lms_stats_details';
-        
-        // Count how many features each user uses
-        $query = "SELECT st_id, COUNT(DISTINCT name) as feature_count
-                  FROM {$details_table}
-                  WHERE name LIKE 'tokens_%' AND val_int > 0
-                  GROUP BY st_id";
-        
+
+        // Count how many features each unique user uses (from their latest stats)
+        $query = "SELECT s.email, COUNT(DISTINCT d.name) as feature_count
+                  FROM {$details_table} d
+                  JOIN {$stats_table} s ON d.st_id = s.id
+                  WHERE d.name LIKE 'tokens_%' AND d.val_int > 0
+                  AND s.id IN (
+                      SELECT MAX(id) FROM {$stats_table}
+                      WHERE mode = 0
+                      GROUP BY email
+                  )
+                  GROUP BY s.email";
+
         $results = $wpdb->get_results($query, ARRAY_A);
-        
+
         $distribution = array(
             '0' => 0,
             '1' => 0,
             '2' => 0,
             '3+' => 0
         );
-        
+
         foreach ($results as $row) {
             $count = (int) $row['feature_count'];
-            
+
             if ($count === 0) {
                 $distribution['0']++;
             } elseif ($count === 1) {
@@ -415,9 +456,9 @@ class AIWU_Analytics_Calculator {
                 $distribution['3+']++;
             }
         }
-        
+
         $total = array_sum($distribution);
-        
+
         $formatted = array();
         foreach ($distribution as $key => $value) {
             $formatted[] = array(
@@ -426,7 +467,7 @@ class AIWU_Analytics_Calculator {
                 'percentage' => $total > 0 ? round(($value / $total) * 100, 1) : 0
             );
         }
-        
+
         return $formatted;
     }
     
