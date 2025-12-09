@@ -166,7 +166,7 @@
                     labels: data.map((_, i) => i),
                     datasets: [{
                         data: data,
-                        borderColor: '#667eea',
+                        borderColor: '#3b82f6',
                         borderWidth: 2,
                         fill: false,
                         pointRadius: 0,
@@ -175,7 +175,8 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2.5,
                     plugins: {
                         legend: { display: false },
                         tooltip: { enabled: false }
@@ -255,7 +256,8 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2.5,
                     plugins: {
                         legend: {
                             position: 'top',
@@ -303,19 +305,20 @@
                         label: 'Users',
                         data: values,
                         backgroundColor: [
-                            '#667eea',
-                            '#764ba2',
-                            '#f093fb',
-                            '#4facfe',
-                            '#43e97b',
-                            '#fa709a'
+                            '#3b82f6',
+                            '#6366f1',
+                            '#8b5cf6',
+                            '#06b6d4',
+                            '#10b981',
+                            '#f59e0b'
                         ],
                         borderRadius: 8
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1.8,
                     plugins: {
                         legend: { display: false }
                     },
@@ -414,14 +417,15 @@
                     datasets: [{
                         label: 'Users',
                         data: top.map(f => f.user_count),
-                        backgroundColor: '#667eea',
+                        backgroundColor: '#3b82f6',
                         borderRadius: 8
                     }]
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1.2,
                     plugins: {
                         legend: { display: false }
                     },
@@ -462,14 +466,15 @@
                     datasets: [{
                         label: 'Tokens',
                         data: top.map(f => f.total_tokens),
-                        backgroundColor: '#764ba2',
+                        backgroundColor: '#6366f1',
                         borderRadius: 8
                     }]
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1.2,
                     plugins: {
                         legend: { display: false },
                         tooltip: {
@@ -524,7 +529,8 @@
                 options: {
                     indexAxis: 'y',
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1.2,
                     plugins: {
                         legend: { display: false },
                         tooltip: {
@@ -594,20 +600,21 @@
                     datasets: [{
                         data: reasons.map(r => r.count),
                         backgroundColor: [
-                            '#f56565',
-                            '#ed8936',
-                            '#ecc94b',
-                            '#48bb78',
-                            '#4299e1',
-                            '#9f7aea',
-                            '#e0e7ff'
+                            '#ef4444',
+                            '#f97316',
+                            '#f59e0b',
+                            '#10b981',
+                            '#3b82f6',
+                            '#8b5cf6',
+                            '#d1d5db'
                         ],
                         borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1.5,
                     plugins: {
                         legend: {
                             position: 'right'
@@ -642,7 +649,8 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2,
                     plugins: {
                         legend: { display: false }
                     },
@@ -711,7 +719,8 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1.5,
                     plugins: {
                         legend: {
                             display: false
@@ -748,13 +757,14 @@
                     datasets: [{
                         label: 'Users',
                         data: data.map(d => d.count),
-                        backgroundColor: '#4facfe',
+                        backgroundColor: '#06b6d4',
                         borderRadius: 8
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1.8,
                     plugins: {
                         legend: { display: false }
                     },
@@ -774,7 +784,7 @@
                 }
             });
         },
-        
+
         /**
          * Render API providers chart
          */
@@ -793,16 +803,17 @@
                         label: 'Users',
                         data: providers.map(p => p.count),
                         backgroundColor: [
-                            '#667eea',
-                            '#764ba2',
-                            '#f093fb'
+                            '#3b82f6',
+                            '#6366f1',
+                            '#8b5cf6'
                         ],
                         borderRadius: 8
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1.8,
                     plugins: {
                         legend: { display: false }
                     },
@@ -822,7 +833,7 @@
                 }
             });
         },
-        
+
         /**
          * Render tables
          */
