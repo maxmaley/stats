@@ -131,6 +131,8 @@
                 dateTo = dates.to;
             }
 
+            console.log('Loading data for period:', period, 'from:', dateFrom, 'to:', dateTo);
+
             // Show loading
             $('#aiwu-loading').show();
 
