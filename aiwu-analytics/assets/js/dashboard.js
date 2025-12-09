@@ -138,12 +138,22 @@
             this.updateKPIChange('#kpi-conversion-change', kpi.conversion_rate.change);
 
             // Active Free Users
-            $('#kpi-active-free').text(kpi.active_free_users.value.toLocaleString());
-            this.updateKPIChange('#kpi-active-free-change', kpi.active_free_users.change);
+            if (kpi.active_free_users) {
+                $('#kpi-active-free').text(kpi.active_free_users.value.toLocaleString());
+                this.updateKPIChange('#kpi-active-free-change', kpi.active_free_users.change);
+            } else {
+                console.error('Missing active_free_users in KPI data');
+                $('#kpi-active-free').text('0');
+            }
 
             // Active Pro Users
-            $('#kpi-active-pro').text(kpi.active_pro_users.value.toLocaleString());
-            this.updateKPIChange('#kpi-active-pro-change', kpi.active_pro_users.change);
+            if (kpi.active_pro_users) {
+                $('#kpi-active-pro').text(kpi.active_pro_users.value.toLocaleString());
+                this.updateKPIChange('#kpi-active-pro-change', kpi.active_pro_users.change);
+            } else {
+                console.error('Missing active_pro_users in KPI data');
+                $('#kpi-active-pro').text('0');
+            }
 
             // Churn Rate
             $('#kpi-churn').text(kpi.churn_rate.value + '%');
