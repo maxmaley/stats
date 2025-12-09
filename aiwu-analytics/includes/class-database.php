@@ -539,13 +539,17 @@ class AIWU_Analytics_Database {
      */
     public function get_feature_conversion_rates() {
         // Get conversion rates for all features dynamically
+        // Use COUNT(DISTINCT CASE WHEN...) to count unique converted users only once
         $query = "SELECT
                     d.name,
                     COUNT(DISTINCT s.email) as total_users,
-                    SUM(CASE WHEN EXISTS (
-                        SELECT 1 FROM {$this->stats_table} s2
-                        WHERE s2.email = s.email AND s2.is_pro = 1
-                    ) THEN 1 ELSE 0 END) as converted_users
+                    COUNT(DISTINCT CASE
+                        WHEN EXISTS (
+                            SELECT 1 FROM {$this->stats_table} s2
+                            WHERE s2.email = s.email AND s2.is_pro = 1
+                        ) THEN s.email
+                        ELSE NULL
+                    END) as converted_users
                  FROM {$this->details_table} d
                  JOIN {$this->stats_table} s ON d.st_id = s.id
                  WHERE d.name LIKE 'tokens_%'
