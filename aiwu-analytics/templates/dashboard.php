@@ -233,51 +233,8 @@ if (!defined('ABSPATH')) {
 </div>
 
 <script>
-// Initialize date inputs with default values
+// Initialize dashboard when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Set default dates (last 30 days)
-    const today = new Date();
-    const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
-    
-    document.getElementById('date_to').valueAsDate = today;
-    document.getElementById('date_from').valueAsDate = thirtyDaysAgo;
-    
-    // Quick period selector
-    document.getElementById('quick_period').addEventListener('change', function() {
-        const value = this.value;
-        const today = new Date();
-        let fromDate;
-        
-        switch(value) {
-            case '7':
-                fromDate = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
-                break;
-            case '30':
-                fromDate = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
-                break;
-            case '90':
-                fromDate = new Date(today.getTime() - (90 * 24 * 60 * 60 * 1000));
-                break;
-            case 'this_month':
-                fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                break;
-            case 'last_month':
-                fromDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                const toDate = new Date(today.getFullYear(), today.getMonth(), 0);
-                document.getElementById('date_to').valueAsDate = toDate;
-                break;
-        }
-        
-        if (fromDate) {
-            document.getElementById('date_from').valueAsDate = fromDate;
-        }
-        
-        if (value !== 'last_month') {
-            document.getElementById('date_to').valueAsDate = today;
-        }
-    });
-    
-    // Load initial data
-    window.aiwuDashboard.loadData();
+    window.aiwuDashboard.init();
 });
 </script>
