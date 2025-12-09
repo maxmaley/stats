@@ -534,29 +534,48 @@ class AIWU_Analytics_Database {
     }
     
     /**
-     * Get feature conversion rates
+     * Get feature conversion rates - TRUE CAUSATION TRACKING
      * DYNAMIC: Calculates for all token_* fields from database
+     * CORRECT LOGIC: Only counts FREE users who used feature, then converted to PRO
+     * This shows causation (feature → conversion), not just correlation
      */
     public function get_feature_conversion_rates() {
-        // Get conversion rates for all features dynamically
-        // Use COUNT(DISTINCT CASE WHEN...) to count unique converted users only once
+        // Only count users who:
+        // 1. Used feature while FREE (is_pro = 0)
+        // 2. Later activated PRO (mode = 1, is_pro = 1)
+        // 3. PRO activation happened AFTER first feature use
         $query = "SELECT
-                    d.name,
-                    COUNT(DISTINCT s.email) as total_users,
+                    free_usage.name,
+                    COUNT(DISTINCT free_usage.email) as total_users,
                     COUNT(DISTINCT CASE
-                        WHEN EXISTS (
-                            SELECT 1 FROM {$this->stats_table} s2
-                            WHERE s2.email = s.email AND s2.is_pro = 1
-                        ) THEN s.email
+                        WHEN pro_activation.pro_date > free_usage.first_use_date
+                        THEN free_usage.email
                         ELSE NULL
                     END) as converted_users
-                 FROM {$this->details_table} d
-                 JOIN {$this->stats_table} s ON d.st_id = s.id
-                 WHERE d.name LIKE 'tokens_%'
-                 AND d.val_int > 0
-                 GROUP BY d.name
-                 HAVING total_users > 0
-                 ORDER BY total_users DESC";
+                FROM (
+                    -- Get first usage date of each feature while user was FREE
+                    SELECT
+                        s.email,
+                        d.name,
+                        MIN(s.date) as first_use_date
+                    FROM {$this->details_table} d
+                    JOIN {$this->stats_table} s ON d.st_id = s.id
+                    WHERE d.name LIKE 'tokens_%'
+                      AND d.val_int > 0
+                      AND s.is_pro = 0
+                    GROUP BY s.email, d.name
+                ) free_usage
+                LEFT JOIN (
+                    -- Get PRO activation date for each user
+                    SELECT
+                        email,
+                        MIN(date) as pro_date
+                    FROM {$this->stats_table}
+                    WHERE mode = 1 AND is_pro = 1
+                    GROUP BY email
+                ) pro_activation ON free_usage.email = pro_activation.email
+                GROUP BY free_usage.name
+                ORDER BY total_users DESC";
 
         $raw_results = $this->wpdb->get_results($query, ARRAY_A);
 
