@@ -455,6 +455,10 @@
         renderFeatureCharts: function() {
             const features = this.data.features;
 
+            console.log('renderFeatureCharts called');
+            console.log('Features data:', features);
+            console.log('Conversion data:', this.data.conversion);
+
             // Populate tables instead of charts
             this.renderFeatureUsersTable(features);
             this.renderFeatureTokensTable(features);
@@ -465,9 +469,15 @@
          * Render feature users table
          */
         renderFeatureUsersTable: function(features) {
-            if (!features) return;
+            console.log('renderFeatureUsersTable called with:', features);
+
+            if (!features) {
+                console.error('No features data available');
+                return;
+            }
 
             const tbody = $('#feature-users-table tbody');
+            console.log('Found tbody element:', tbody.length);
             tbody.empty();
 
             features.forEach((feature) => {
@@ -479,19 +489,28 @@
                 `;
                 tbody.append(row);
             });
+
+            console.log('Added', features.length, 'rows to users table');
         },
 
         /**
          * Render feature tokens table
          */
         renderFeatureTokensTable: function(features) {
-            if (!features) return;
+            console.log('renderFeatureTokensTable called with:', features);
+
+            if (!features) {
+                console.error('No features data available for tokens table');
+                return;
+            }
 
             const tbody = $('#feature-tokens-table tbody');
+            console.log('Found tbody element:', tbody.length);
             tbody.empty();
 
             // Sort by total tokens
             const sortedByTokens = [...features].sort((a, b) => b.total_tokens - a.total_tokens);
+            console.log('Sorted by tokens:', sortedByTokens.length, 'features');
 
             sortedByTokens.forEach((feature) => {
                 const row = `
@@ -502,6 +521,8 @@
                 `;
                 tbody.append(row);
             });
+
+            console.log('Added', sortedByTokens.length, 'rows to tokens table');
         },
 
         /**
@@ -509,9 +530,16 @@
          */
         renderFeatureConversionTable: function() {
             const convData = this.data.conversion.by_feature;
-            if (!convData) return;
+            console.log('renderFeatureConversionTable called');
+            console.log('Conversion by feature data:', convData);
+
+            if (!convData) {
+                console.error('No conversion by_feature data available');
+                return;
+            }
 
             const tbody = $('#feature-conversion-table tbody');
+            console.log('Found tbody element:', tbody.length);
             tbody.empty();
 
             convData.forEach((item) => {
@@ -525,6 +553,8 @@
                 `;
                 tbody.append(row);
             });
+
+            console.log('Added', convData.length, 'rows to conversion table');
         },
 
         /**
