@@ -499,101 +499,75 @@ class AIWU_Analytics_Database {
     
     /**
      * Get feature usage statistics
-     * FIXED: Count unique emails instead of st_id (records)
+     * DYNAMIC: Finds all token_* fields from database
      */
     public function get_feature_usage() {
-        $features = array(
-            'tokens_postscreate' => 'Bulk Content',
-            'tokens_chatbots' => 'Chatbot',
-            'tokens_workflow' => 'Workflow Builder',
-            'tokens_magictext' => 'Magic Text',
-            'tokens_postsrss' => 'Posts RSS',
-            'tokens_training' => 'Training',
-            'tokens_postsfields' => 'Post Fields',
-            'tokens_postslinks' => 'Posts Links',
-            'tokens_forms' => 'Forms',
-            'tokens_postsaskai' => 'Ask AI',
-            'tokens_productsfields' => 'Product Fields'
-        );
-
-        $results = array();
-
-        foreach ($features as $token_name => $feature_name) {
-            $query = $this->wpdb->prepare(
-                "SELECT
+        // Get all features dynamically from database
+        $query = "SELECT
+                    d.name,
                     COUNT(DISTINCT s.email) as user_count,
                     SUM(d.val_int) as total_tokens
                  FROM {$this->details_table} d
                  JOIN {$this->stats_table} s ON d.st_id = s.id
-                 WHERE d.name = %s AND d.val_int > 0",
-                $token_name
-            );
+                 WHERE d.name LIKE 'tokens_%'
+                 AND d.val_int > 0
+                 GROUP BY d.name
+                 ORDER BY user_count DESC";
 
-            $data = $this->wpdb->get_row($query, ARRAY_A);
+        $raw_results = $this->wpdb->get_results($query, ARRAY_A);
 
-            // Handle NULL result (no data for this feature)
-            $user_count = $data ? (int) $data['user_count'] : 0;
-            $total_tokens = $data ? (int) $data['total_tokens'] : 0;
+        $results = array();
+        foreach ($raw_results as $row) {
+            $token_name = $row['name'];
+            // Convert token name to readable format: tokens_postscreate -> Post Create
+            $feature_name = ucwords(str_replace('_', ' ', str_replace('tokens_', '', $token_name)));
 
             $results[] = array(
                 'feature' => $feature_name,
                 'token_name' => $token_name,
-                'user_count' => $user_count,
-                'total_tokens' => $total_tokens
+                'user_count' => (int) $row['user_count'],
+                'total_tokens' => (int) $row['total_tokens']
             );
         }
-
-        // Sort by user count descending
-        usort($results, function($a, $b) {
-            return $b['user_count'] - $a['user_count'];
-        });
 
         return $results;
     }
     
     /**
      * Get feature conversion rates
-     * FIXED: Count unique emails instead of st_id (records)
+     * DYNAMIC: Calculates for all token_* fields from database
      */
     public function get_feature_conversion_rates() {
-        $features = array(
-            'tokens_chatbots' => 'Chatbot',
-            'tokens_postscreate' => 'Bulk Content',
-            'tokens_workflow' => 'Workflow Builder'
-        );
+        // Get conversion rates for all features dynamically
+        $query = "SELECT
+                    d.name,
+                    COUNT(DISTINCT s.email) as total_users,
+                    SUM(CASE WHEN EXISTS (
+                        SELECT 1 FROM {$this->stats_table} s2
+                        WHERE s2.email = s.email AND s2.is_pro = 1
+                    ) THEN 1 ELSE 0 END) as converted_users
+                 FROM {$this->details_table} d
+                 JOIN {$this->stats_table} s ON d.st_id = s.id
+                 WHERE d.name LIKE 'tokens_%'
+                 AND d.val_int > 0
+                 GROUP BY d.name
+                 HAVING total_users > 0
+                 ORDER BY total_users DESC";
+
+        $raw_results = $this->wpdb->get_results($query, ARRAY_A);
 
         $results = array();
-
-        foreach ($features as $token_name => $feature_name) {
-            // Unique users who used this feature
-            $total_users = $this->wpdb->get_var($this->wpdb->prepare(
-                "SELECT COUNT(DISTINCT s.email)
-                 FROM {$this->details_table} d
-                 JOIN {$this->stats_table} s ON d.st_id = s.id
-                 WHERE d.name = %s AND d.val_int > 0",
-                $token_name
-            ));
-
-            // Unique users who used this feature AND converted to Pro
-            $converted_users = $this->wpdb->get_var($this->wpdb->prepare(
-                "SELECT COUNT(DISTINCT s.email)
-                 FROM {$this->details_table} d
-                 JOIN {$this->stats_table} s ON d.st_id = s.id
-                 WHERE d.name = %s
-                 AND d.val_int > 0
-                 AND EXISTS (
-                     SELECT 1 FROM {$this->stats_table} s2
-                     WHERE s2.email = s.email AND s2.is_pro = 1
-                 )",
-                $token_name
-            ));
-
+        foreach ($raw_results as $row) {
+            $token_name = $row['name'];
+            $feature_name = ucwords(str_replace('_', ' ', str_replace('tokens_', '', $token_name)));
+            $total_users = (int) $row['total_users'];
+            $converted_users = (int) $row['converted_users'];
             $conversion_rate = $total_users > 0 ? ($converted_users / $total_users) * 100 : 0;
 
             $results[] = array(
                 'feature' => $feature_name,
-                'total_users' => (int) $total_users,
-                'converted_users' => (int) $converted_users,
+                'total_users' => $total_users,
+                'converted_users' => $converted_users,
                 'conversion_rate' => round($conversion_rate, 2)
             );
         }
@@ -659,29 +633,35 @@ class AIWU_Analytics_Database {
     
     /**
      * Get API provider distribution
-     * FIXED: Count unique emails instead of st_id (records)
+     * DYNAMIC: Finds all *apikey* and *api_key* fields from database
      */
     public function get_api_provider_distribution() {
-        $providers = array(
-            'apikey' => 'OpenAI',
-            'gemini_api_key' => 'Gemini',
-            'deep_seek_apikey' => 'DeepSeek'
-        );
-
-        $results = array();
-
-        foreach ($providers as $key_name => $provider_name) {
-            $count = $this->wpdb->get_var($this->wpdb->prepare(
-                "SELECT COUNT(DISTINCT s.email)
+        // Get all API key fields dynamically from database
+        $query = "SELECT
+                    d.name,
+                    COUNT(DISTINCT s.email) as count
                  FROM {$this->details_table} d
                  JOIN {$this->stats_table} s ON d.st_id = s.id
-                 WHERE d.name = %s AND d.val_int > 0",
-                $key_name
-            ));
+                 WHERE (d.name LIKE '%apikey%' OR d.name LIKE '%api_key%')
+                 AND d.val_int > 0
+                 GROUP BY d.name
+                 ORDER BY count DESC";
+
+        $raw_results = $this->wpdb->get_results($query, ARRAY_A);
+
+        $results = array();
+        foreach ($raw_results as $row) {
+            $key_name = $row['name'];
+            // Convert key name to readable format
+            // apikey -> OpenAI, gemini_api_key -> Gemini, deep_seek_apikey -> Deep Seek
+            $provider_name = ucwords(str_replace('_', ' ', str_replace('apikey', '', str_replace('api_key', '', $key_name))));
+            if (empty(trim($provider_name))) {
+                $provider_name = 'OpenAI'; // Default for plain 'apikey'
+            }
 
             $results[] = array(
-                'provider' => $provider_name,
-                'count' => (int) $count
+                'provider' => trim($provider_name),
+                'count' => (int) $row['count']
             );
         }
 
