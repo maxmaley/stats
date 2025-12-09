@@ -7,10 +7,22 @@
 
     // Main dashboard object
     window.aiwuDashboard = {
-        
+
         charts: {},
         data: null,
-        
+
+        /**
+         * Helper: Get canvas element with null check
+         */
+        getCanvas: function(id) {
+            const element = document.getElementById(id);
+            if (!element) {
+                console.error('Canvas element not found:', id);
+                return null;
+            }
+            return element;
+        },
+
         /**
          * Initialize dashboard
          */
@@ -116,26 +128,22 @@
          */
         renderKPICards: function() {
             const kpi = this.data.kpi;
-            
+
             // Installations
             $('#kpi-installations').text(kpi.installations.value.toLocaleString());
             this.updateKPIChange('#kpi-installations-change', kpi.installations.change);
-            this.renderMiniTrend('kpi-installations-trend', kpi.installations.trend);
-            
+
             // Conversion Rate
             $('#kpi-conversion').text(kpi.conversion_rate.value + '%');
             this.updateKPIChange('#kpi-conversion-change', kpi.conversion_rate.change);
-            this.renderMiniTrend('kpi-conversion-trend', kpi.conversion_rate.trend);
-            
+
             // Active Users
             $('#kpi-active').text(kpi.active_users.value.toLocaleString());
             this.updateKPIChange('#kpi-active-change', kpi.active_users.change);
-            this.renderMiniTrend('kpi-active-trend', kpi.active_users.trend);
-            
+
             // Churn Rate
             $('#kpi-churn').text(kpi.churn_rate.value + '%');
             this.updateKPIChange('#kpi-churn-change', kpi.churn_rate.change, true);
-            this.renderMiniTrend('kpi-churn-trend', kpi.churn_rate.trend);
         },
         
         /**
@@ -166,7 +174,7 @@
                     labels: data.map((_, i) => i),
                     datasets: [{
                         data: data,
-                        borderColor: '#667eea',
+                        borderColor: '#3b82f6',
                         borderWidth: 2,
                         fill: false,
                         pointRadius: 0,
@@ -208,12 +216,18 @@
          * Render conversion timeline chart
          */
         renderConversionTimeline: function(timeline) {
-            const ctx = document.getElementById('conversion-timeline-chart');
-            
+            const ctx = this.getCanvas('conversion-timeline-chart');
+            if (!ctx) return;
+
+            if (!timeline || !timeline.activations || !timeline.conversions) {
+                console.error('Invalid timeline data', timeline);
+                return;
+            }
+
             if (this.charts.conversionTimeline) {
                 this.charts.conversionTimeline.destroy();
             }
-            
+
             // Merge activations and conversions data
             const dates = [...new Set([
                 ...timeline.activations.map(a => a.date),
@@ -281,17 +295,18 @@
                 }
             });
         },
-        
+
         /**
          * Render time to convert histogram
          */
         renderTimeToConvert: function(data) {
-            const ctx = document.getElementById('time-to-convert-chart');
-            
+            const ctx = this.getCanvas('time-to-convert-chart');
+            if (!ctx || !data) return;
+
             if (this.charts.timeToConvert) {
                 this.charts.timeToConvert.destroy();
             }
-            
+
             const labels = Object.keys(data);
             const values = Object.values(data);
             
@@ -303,12 +318,12 @@
                         label: 'Users',
                         data: values,
                         backgroundColor: [
-                            '#667eea',
-                            '#764ba2',
-                            '#f093fb',
-                            '#4facfe',
-                            '#43e97b',
-                            '#fa709a'
+                            '#3b82f6',
+                            '#6366f1',
+                            '#8b5cf6',
+                            '#06b6d4',
+                            '#10b981',
+                            '#f59e0b'
                         ],
                         borderRadius: 8
                     }]
@@ -335,7 +350,7 @@
                 }
             });
         },
-        
+
         /**
          * Render recent conversions table
          */
@@ -398,12 +413,13 @@
          * Render feature users chart
          */
         renderFeatureUserChart: function(features) {
-            const ctx = document.getElementById('feature-users-chart');
-            
+            const ctx = this.getCanvas('feature-users-chart');
+            if (!ctx || !features) return;
+
             if (this.charts.featureUsers) {
                 this.charts.featureUsers.destroy();
             }
-            
+
             // Take top 8 features
             const top = features.slice(0, 8);
             
@@ -414,7 +430,7 @@
                     datasets: [{
                         label: 'Users',
                         data: top.map(f => f.user_count),
-                        backgroundColor: '#667eea',
+                        backgroundColor: '#3b82f6',
                         borderRadius: 8
                     }]
                 },
@@ -441,17 +457,18 @@
                 }
             });
         },
-        
+
         /**
          * Render feature tokens chart
          */
         renderFeatureTokensChart: function(features) {
-            const ctx = document.getElementById('feature-tokens-chart');
-            
+            const ctx = this.getCanvas('feature-tokens-chart');
+            if (!ctx || !features) return;
+
             if (this.charts.featureTokens) {
                 this.charts.featureTokens.destroy();
             }
-            
+
             // Take top 8 features
             const top = features.slice(0, 8);
             
@@ -462,7 +479,7 @@
                     datasets: [{
                         label: 'Tokens',
                         data: top.map(f => f.total_tokens),
-                        backgroundColor: '#764ba2',
+                        backgroundColor: '#6366f1',
                         borderRadius: 8
                     }]
                 },
@@ -497,13 +514,14 @@
                 }
             });
         },
-        
+
         /**
          * Render feature conversion chart
          */
         renderFeatureConversionChart: function(features) {
-            const ctx = document.getElementById('feature-conversion-chart');
-            
+            const ctx = this.getCanvas('feature-conversion-chart');
+            if (!ctx || !features) return;
+
             if (this.charts.featureConversion) {
                 this.charts.featureConversion.destroy();
             }
@@ -553,7 +571,7 @@
                 }
             });
         },
-        
+
         /**
          * Render churn charts
          */
@@ -581,8 +599,9 @@
          * Render churn reasons chart
          */
         renderChurnReasons: function(reasons) {
-            const ctx = document.getElementById('churn-reasons-chart');
-            
+            const ctx = this.getCanvas('churn-reasons-chart');
+            if (!ctx || !reasons) return;
+
             if (this.charts.churnReasons) {
                 this.charts.churnReasons.destroy();
             }
@@ -594,13 +613,13 @@
                     datasets: [{
                         data: reasons.map(r => r.count),
                         backgroundColor: [
-                            '#f56565',
-                            '#ed8936',
-                            '#ecc94b',
-                            '#48bb78',
-                            '#4299e1',
-                            '#9f7aea',
-                            '#e0e7ff'
+                            '#ef4444',
+                            '#f97316',
+                            '#f59e0b',
+                            '#10b981',
+                            '#3b82f6',
+                            '#8b5cf6',
+                            '#d1d5db'
                         ],
                         borderWidth: 0
                     }]
@@ -616,13 +635,14 @@
                 }
             });
         },
-        
+
         /**
          * Render churn timeline chart
          */
         renderChurnTimeline: function(timeline) {
-            const ctx = document.getElementById('churn-timeline-chart');
-            
+            const ctx = this.getCanvas('churn-timeline-chart');
+            if (!ctx || !timeline) return;
+
             if (this.charts.churnTimeline) {
                 this.charts.churnTimeline.destroy();
             }
@@ -662,7 +682,7 @@
                 }
             });
         },
-        
+
         /**
          * Render engagement charts
          */
@@ -683,8 +703,9 @@
          * Render user segments chart
          */
         renderUserSegments: function(segments) {
-            const ctx = document.getElementById('user-segments-chart');
-            
+            const ctx = this.getCanvas('user-segments-chart');
+            if (!ctx || !segments) return;
+
             if (this.charts.userSegments) {
                 this.charts.userSegments.destroy();
             }
@@ -730,13 +751,14 @@
                 }
             });
         },
-        
+
         /**
          * Render multi-feature usage chart
          */
         renderMultiFeature: function(data) {
-            const ctx = document.getElementById('multi-feature-chart');
-            
+            const ctx = this.getCanvas('multi-feature-chart');
+            if (!ctx || !data) return;
+
             if (this.charts.multiFeature) {
                 this.charts.multiFeature.destroy();
             }
@@ -748,7 +770,7 @@
                     datasets: [{
                         label: 'Users',
                         data: data.map(d => d.count),
-                        backgroundColor: '#4facfe',
+                        backgroundColor: '#06b6d4',
                         borderRadius: 8
                     }]
                 },
@@ -774,13 +796,14 @@
                 }
             });
         },
-        
+
         /**
          * Render API providers chart
          */
         renderAPIProviders: function(providers) {
-            const ctx = document.getElementById('api-providers-chart');
-            
+            const ctx = this.getCanvas('api-providers-chart');
+            if (!ctx || !providers) return;
+
             if (this.charts.apiProviders) {
                 this.charts.apiProviders.destroy();
             }
@@ -793,9 +816,9 @@
                         label: 'Users',
                         data: providers.map(p => p.count),
                         backgroundColor: [
-                            '#667eea',
-                            '#764ba2',
-                            '#f093fb'
+                            '#3b82f6',
+                            '#6366f1',
+                            '#8b5cf6'
                         ],
                         borderRadius: 8
                     }]
@@ -822,7 +845,7 @@
                 }
             });
         },
-        
+
         /**
          * Render tables
          */

@@ -231,23 +231,31 @@ class AIWU_Analytics_Database {
      * Get conversion timeline
      */
     public function get_conversion_timeline($date_from, $date_to) {
+        // OPTIMIZED: Use subquery to find first conversion date per user, then count by date
+        // This is much faster than NOT EXISTS for each row
         $query = $this->wpdb->prepare(
-            "SELECT DATE(s1.created) as date, COUNT(DISTINCT s1.email) as conversions
-             FROM {$this->stats_table} s1
-             WHERE s1.is_pro = 1
-             AND s1.created BETWEEN %s AND %s
-             AND EXISTS (
-                 SELECT 1 FROM {$this->stats_table} s2 
-                 WHERE s2.email = s1.email 
-                 AND s2.is_pro = 0 
-                 AND s2.created < s1.created
-             )
-             GROUP BY DATE(s1.created)
+            "SELECT DATE(first_pro.first_pro_date) as date,
+                    COUNT(DISTINCT first_pro.email) as conversions
+             FROM (
+                 SELECT s1.email,
+                        MIN(s1.created) as first_pro_date
+                 FROM {$this->stats_table} s1
+                 WHERE s1.is_pro = 1
+                 AND EXISTS (
+                     SELECT 1 FROM {$this->stats_table} s2
+                     WHERE s2.email = s1.email
+                     AND s2.is_pro = 0
+                     AND s2.created < s1.created
+                 )
+                 GROUP BY s1.email
+             ) first_pro
+             WHERE first_pro.first_pro_date BETWEEN %s AND %s
+             GROUP BY DATE(first_pro.first_pro_date)
              ORDER BY date ASC",
             $date_from,
             $date_to
         );
-        
+
         return $this->wpdb->get_results($query, ARRAY_A);
     }
     

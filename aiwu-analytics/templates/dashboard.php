@@ -13,21 +13,21 @@ if (!defined('ABSPATH')) {
     
     <!-- Header -->
     <div class="aiwu-header">
-        <h1>📊 AIWU Analytics Dashboard</h1>
+        <h1>AIWU Analytics Dashboard</h1>
         <p class="aiwu-subtitle">Comprehensive analytics for plugin usage, conversions, and user behavior</p>
     </div>
 
     <!-- Filters Section -->
     <div class="aiwu-filters-panel">
         <div class="filter-group">
-            <label>📅 Period</label>
+            <label>Period</label>
             <div class="date-inputs">
                 <input type="date" id="date_from" class="filter-input" />
                 <span class="date-separator">to</span>
                 <input type="date" id="date_to" class="filter-input" />
             </div>
         </div>
-        
+
         <div class="filter-group">
             <label>Quick Select</label>
             <select id="quick_period" class="filter-input">
@@ -38,18 +38,18 @@ if (!defined('ABSPATH')) {
                 <option value="last_month">Last month</option>
             </select>
         </div>
-        
+
         <div class="filter-group">
-            <label>📦 Plan</label>
+            <label>Plan</label>
             <select id="plan_filter" class="filter-input">
                 <option value="all">All Plans</option>
                 <option value="free">Free Only</option>
                 <option value="pro">Pro Only</option>
             </select>
         </div>
-        
+
         <div class="filter-group">
-            <label>🎨 Feature</label>
+            <label>Feature</label>
             <select id="feature_filter" class="filter-input">
                 <option value="all">All Features</option>
                 <option value="chatbot">Chatbot</option>
@@ -73,52 +73,44 @@ if (!defined('ABSPATH')) {
     <!-- KPI Cards Section -->
     <div class="aiwu-kpi-section">
         <div class="kpi-card">
-            <div class="kpi-icon">📥</div>
             <div class="kpi-content">
                 <div class="kpi-label">Total Installations</div>
                 <div class="kpi-value" id="kpi-installations">-</div>
                 <div class="kpi-change" id="kpi-installations-change">-</div>
             </div>
-            <canvas id="kpi-installations-trend" class="kpi-trend"></canvas>
         </div>
 
         <div class="kpi-card">
-            <div class="kpi-icon">💰</div>
             <div class="kpi-content">
                 <div class="kpi-label">Conversion Rate</div>
                 <div class="kpi-value" id="kpi-conversion">-</div>
                 <div class="kpi-change" id="kpi-conversion-change">-</div>
             </div>
-            <canvas id="kpi-conversion-trend" class="kpi-trend"></canvas>
         </div>
 
         <div class="kpi-card">
-            <div class="kpi-icon">👥</div>
             <div class="kpi-content">
                 <div class="kpi-label">Active Users</div>
                 <div class="kpi-value" id="kpi-active">-</div>
                 <div class="kpi-change" id="kpi-active-change">-</div>
             </div>
-            <canvas id="kpi-active-trend" class="kpi-trend"></canvas>
         </div>
 
         <div class="kpi-card">
-            <div class="kpi-icon">🚪</div>
             <div class="kpi-content">
                 <div class="kpi-label">Churn Rate</div>
                 <div class="kpi-value" id="kpi-churn">-</div>
                 <div class="kpi-change negative" id="kpi-churn-change">-</div>
             </div>
-            <canvas id="kpi-churn-trend" class="kpi-trend"></canvas>
         </div>
     </div>
 
     <!-- Conversion Timeline Section -->
     <div class="aiwu-section">
         <div class="section-header">
-            <h2>💰 Conversion Analysis</h2>
+            <h2>Conversion Analysis</h2>
         </div>
-        <div class="chart-container large">
+        <div class="chart-container large" style="height: 400px !important; max-height: 400px !important; overflow: hidden !important;">
             <canvas id="conversion-timeline-chart"></canvas>
         </div>
     </div>
@@ -127,16 +119,16 @@ if (!defined('ABSPATH')) {
     <div class="aiwu-grid-2">
         <div class="aiwu-section">
             <div class="section-header">
-                <h3>⏱️ Time to Conversion</h3>
+                <h3>Time to Conversion</h3>
             </div>
-            <div class="chart-container">
+            <div class="chart-container" style="height: 300px !important; max-height: 300px !important; overflow: hidden !important;">
                 <canvas id="time-to-convert-chart"></canvas>
             </div>
         </div>
 
         <div class="aiwu-section">
             <div class="section-header">
-                <h3>🎯 Conversion Triggers</h3>
+                <h3>Conversion Triggers</h3>
                 <p class="section-subtitle">What users did before upgrading to Pro</p>
             </div>
             <div class="table-container" id="recent-conversions-table">
@@ -148,18 +140,18 @@ if (!defined('ABSPATH')) {
     <!-- Feature Popularity Section -->
     <div class="aiwu-section">
         <div class="section-header">
-            <h2>🔥 Feature Popularity</h2>
+            <h2>Feature Popularity</h2>
         </div>
         <div class="aiwu-grid-3">
-            <div class="chart-card">
+            <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
                 <h4>By User Count</h4>
                 <canvas id="feature-users-chart"></canvas>
             </div>
-            <div class="chart-card">
+            <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
                 <h4>By Token Usage</h4>
                 <canvas id="feature-tokens-chart"></canvas>
             </div>
-            <div class="chart-card">
+            <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
                 <h4>Conversion Rate by Feature</h4>
                 <canvas id="feature-conversion-chart"></canvas>
             </div>
@@ -170,21 +162,21 @@ if (!defined('ABSPATH')) {
     <div class="aiwu-grid-2">
         <div class="aiwu-section">
             <div class="section-header">
-                <h3>🚪 Deactivation Reasons</h3>
+                <h3>Deactivation Reasons</h3>
             </div>
-            <div class="chart-container">
+            <div class="chart-container" style="height: 300px !important; max-height: 300px !important; overflow: hidden !important;">
                 <canvas id="churn-reasons-chart"></canvas>
             </div>
             <div class="churn-insight">
-                <strong>⚠️ Key Insight:</strong> <span id="churn-insight-text">-</span>
+                <strong>Key Insight:</strong> <span id="churn-insight-text">-</span>
             </div>
         </div>
 
         <div class="aiwu-section">
             <div class="section-header">
-                <h3>📉 Churn Timeline</h3>
+                <h3>Churn Timeline</h3>
             </div>
-            <div class="chart-container">
+            <div class="chart-container" style="height: 300px !important; max-height: 300px !important; overflow: hidden !important;">
                 <canvas id="churn-timeline-chart"></canvas>
             </div>
             <div class="churn-comparison">
@@ -203,10 +195,10 @@ if (!defined('ABSPATH')) {
     <!-- Engagement Section -->
     <div class="aiwu-section">
         <div class="section-header">
-            <h2>📈 User Engagement</h2>
+            <h2>User Engagement</h2>
         </div>
         <div class="aiwu-grid-3">
-            <div class="chart-card">
+            <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
                 <h4>User Segments</h4>
                 <canvas id="user-segments-chart"></canvas>
                 <div class="segment-legend">
@@ -229,12 +221,12 @@ if (!defined('ABSPATH')) {
                 </div>
             </div>
 
-            <div class="chart-card">
+            <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
                 <h4>Multi-Feature Usage</h4>
                 <canvas id="multi-feature-chart"></canvas>
             </div>
 
-            <div class="chart-card">
+            <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
                 <h4>API Provider Distribution</h4>
                 <canvas id="api-providers-chart"></canvas>
             </div>
@@ -244,7 +236,7 @@ if (!defined('ABSPATH')) {
     <!-- User Activity Table Section -->
     <div class="aiwu-section">
         <div class="section-header">
-            <h2>📋 User Activity Details</h2>
+            <h2>User Activity Details</h2>
             <div class="table-actions">
                 <input type="search" id="user-search" placeholder="Search by email..." class="table-search" />
                 <button id="export-csv" class="button">Export CSV</button>
