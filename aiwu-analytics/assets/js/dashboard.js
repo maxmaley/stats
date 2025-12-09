@@ -174,7 +174,7 @@
                     }]
                 },
                 options: {
-                    responsive: false,
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
@@ -254,7 +254,7 @@
                     ]
                 },
                 options: {
-                    responsive: false,
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
@@ -314,7 +314,7 @@
                     }]
                 },
                 options: {
-                    responsive: false,
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
@@ -420,7 +420,7 @@
                 },
                 options: {
                     indexAxis: 'y',
-                    responsive: false,
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
@@ -468,7 +468,7 @@
                 },
                 options: {
                     indexAxis: 'y',
-                    responsive: false,
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
@@ -523,7 +523,7 @@
                 },
                 options: {
                     indexAxis: 'y',
-                    responsive: false,
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
@@ -606,7 +606,7 @@
                     }]
                 },
                 options: {
-                    responsive: false,
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
@@ -641,7 +641,7 @@
                     }]
                 },
                 options: {
-                    responsive: false,
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
@@ -710,7 +710,7 @@
                     }]
                 },
                 options: {
-                    responsive: false,
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
@@ -753,7 +753,7 @@
                     }]
                 },
                 options: {
-                    responsive: false,
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
@@ -801,7 +801,7 @@
                     }]
                 },
                 options: {
-                    responsive: false,
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }

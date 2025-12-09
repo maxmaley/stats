@@ -115,7 +115,7 @@ if (!defined('ABSPATH')) {
             <h2>Conversion Analysis</h2>
         </div>
         <div class="chart-container large" style="height: 400px !important; max-height: 400px !important; overflow: hidden !important;">
-            <canvas id="conversion-timeline-chart" width="800" height="400"></canvas>
+            <canvas id="conversion-timeline-chart"></canvas>
         </div>
     </div>
 
@@ -126,7 +126,7 @@ if (!defined('ABSPATH')) {
                 <h3>Time to Conversion</h3>
             </div>
             <div class="chart-container" style="height: 300px !important; max-height: 300px !important; overflow: hidden !important;">
-                <canvas id="time-to-convert-chart" width="500" height="300"></canvas>
+                <canvas id="time-to-convert-chart"></canvas>
             </div>
         </div>
 
@@ -149,15 +149,15 @@ if (!defined('ABSPATH')) {
         <div class="aiwu-grid-3">
             <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
                 <h4>By User Count</h4>
-                <canvas id="feature-users-chart" width="400" height="280"></canvas>
+                <canvas id="feature-users-chart"></canvas>
             </div>
             <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
                 <h4>By Token Usage</h4>
-                <canvas id="feature-tokens-chart" width="400" height="280"></canvas>
+                <canvas id="feature-tokens-chart"></canvas>
             </div>
             <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
                 <h4>Conversion Rate by Feature</h4>
-                <canvas id="feature-conversion-chart" width="400" height="280"></canvas>
+                <canvas id="feature-conversion-chart"></canvas>
             </div>
         </div>
     </div>
@@ -169,7 +169,7 @@ if (!defined('ABSPATH')) {
                 <h3>Deactivation Reasons</h3>
             </div>
             <div class="chart-container" style="height: 300px !important; max-height: 300px !important; overflow: hidden !important;">
-                <canvas id="churn-reasons-chart" width="500" height="300"></canvas>
+                <canvas id="churn-reasons-chart"></canvas>
             </div>
             <div class="churn-insight">
                 <strong>Key Insight:</strong> <span id="churn-insight-text">-</span>
@@ -181,7 +181,7 @@ if (!defined('ABSPATH')) {
                 <h3>Churn Timeline</h3>
             </div>
             <div class="chart-container" style="height: 300px !important; max-height: 300px !important; overflow: hidden !important;">
-                <canvas id="churn-timeline-chart" width="500" height="300"></canvas>
+                <canvas id="churn-timeline-chart"></canvas>
             </div>
             <div class="churn-comparison">
                 <div class="comparison-item">
@@ -204,7 +204,7 @@ if (!defined('ABSPATH')) {
         <div class="aiwu-grid-3">
             <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
                 <h4>User Segments</h4>
-                <canvas id="user-segments-chart" width="400" height="240"></canvas>
+                <canvas id="user-segments-chart"></canvas>
                 <div class="segment-legend">
                     <div class="legend-item">
                         <span class="color-box dead"></span>
@@ -227,12 +227,12 @@ if (!defined('ABSPATH')) {
 
             <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
                 <h4>Multi-Feature Usage</h4>
-                <canvas id="multi-feature-chart" width="400" height="280"></canvas>
+                <canvas id="multi-feature-chart"></canvas>
             </div>
 
             <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
                 <h4>API Provider Distribution</h4>
-                <canvas id="api-providers-chart" width="400" height="280"></canvas>
+                <canvas id="api-providers-chart"></canvas>
             </div>
         </div>
     </div>
