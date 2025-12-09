@@ -7,10 +7,22 @@
 
     // Main dashboard object
     window.aiwuDashboard = {
-        
+
         charts: {},
         data: null,
-        
+
+        /**
+         * Helper: Get canvas element with null check
+         */
+        getCanvas: function(id) {
+            const element = document.getElementById(id);
+            if (!element) {
+                console.error('Canvas element not found:', id);
+                return null;
+            }
+            return element;
+        },
+
         /**
          * Initialize dashboard
          */
@@ -204,12 +216,18 @@
          * Render conversion timeline chart
          */
         renderConversionTimeline: function(timeline) {
-            const ctx = document.getElementById('conversion-timeline-chart');
-            
+            const ctx = this.getCanvas('conversion-timeline-chart');
+            if (!ctx) return;
+
+            if (!timeline || !timeline.activations || !timeline.conversions) {
+                console.error('Invalid timeline data', timeline);
+                return;
+            }
+
             if (this.charts.conversionTimeline) {
                 this.charts.conversionTimeline.destroy();
             }
-            
+
             // Merge activations and conversions data
             const dates = [...new Set([
                 ...timeline.activations.map(a => a.date),
@@ -282,12 +300,13 @@
          * Render time to convert histogram
          */
         renderTimeToConvert: function(data) {
-            const ctx = document.getElementById('time-to-convert-chart');
-            
+            const ctx = this.getCanvas('time-to-convert-chart');
+            if (!ctx || !data) return;
+
             if (this.charts.timeToConvert) {
                 this.charts.timeToConvert.destroy();
             }
-            
+
             const labels = Object.keys(data);
             const values = Object.values(data);
             
@@ -394,12 +413,13 @@
          * Render feature users chart
          */
         renderFeatureUserChart: function(features) {
-            const ctx = document.getElementById('feature-users-chart');
-            
+            const ctx = this.getCanvas('feature-users-chart');
+            if (!ctx || !features) return;
+
             if (this.charts.featureUsers) {
                 this.charts.featureUsers.destroy();
             }
-            
+
             // Take top 8 features
             const top = features.slice(0, 8);
             
@@ -442,12 +462,13 @@
          * Render feature tokens chart
          */
         renderFeatureTokensChart: function(features) {
-            const ctx = document.getElementById('feature-tokens-chart');
-            
+            const ctx = this.getCanvas('feature-tokens-chart');
+            if (!ctx || !features) return;
+
             if (this.charts.featureTokens) {
                 this.charts.featureTokens.destroy();
             }
-            
+
             // Take top 8 features
             const top = features.slice(0, 8);
             
@@ -498,8 +519,9 @@
          * Render feature conversion chart
          */
         renderFeatureConversionChart: function(features) {
-            const ctx = document.getElementById('feature-conversion-chart');
-            
+            const ctx = this.getCanvas('feature-conversion-chart');
+            if (!ctx || !features) return;
+
             if (this.charts.featureConversion) {
                 this.charts.featureConversion.destroy();
             }
@@ -577,8 +599,9 @@
          * Render churn reasons chart
          */
         renderChurnReasons: function(reasons) {
-            const ctx = document.getElementById('churn-reasons-chart');
-            
+            const ctx = this.getCanvas('churn-reasons-chart');
+            if (!ctx || !reasons) return;
+
             if (this.charts.churnReasons) {
                 this.charts.churnReasons.destroy();
             }
@@ -617,8 +640,9 @@
          * Render churn timeline chart
          */
         renderChurnTimeline: function(timeline) {
-            const ctx = document.getElementById('churn-timeline-chart');
-            
+            const ctx = this.getCanvas('churn-timeline-chart');
+            if (!ctx || !timeline) return;
+
             if (this.charts.churnTimeline) {
                 this.charts.churnTimeline.destroy();
             }
@@ -679,8 +703,9 @@
          * Render user segments chart
          */
         renderUserSegments: function(segments) {
-            const ctx = document.getElementById('user-segments-chart');
-            
+            const ctx = this.getCanvas('user-segments-chart');
+            if (!ctx || !segments) return;
+
             if (this.charts.userSegments) {
                 this.charts.userSegments.destroy();
             }
@@ -731,8 +756,9 @@
          * Render multi-feature usage chart
          */
         renderMultiFeature: function(data) {
-            const ctx = document.getElementById('multi-feature-chart');
-            
+            const ctx = this.getCanvas('multi-feature-chart');
+            if (!ctx || !data) return;
+
             if (this.charts.multiFeature) {
                 this.charts.multiFeature.destroy();
             }
@@ -775,8 +801,9 @@
          * Render API providers chart
          */
         renderAPIProviders: function(providers) {
-            const ctx = document.getElementById('api-providers-chart');
-            
+            const ctx = this.getCanvas('api-providers-chart');
+            if (!ctx || !providers) return;
+
             if (this.charts.apiProviders) {
                 this.charts.apiProviders.destroy();
             }
