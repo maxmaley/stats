@@ -116,26 +116,22 @@
          */
         renderKPICards: function() {
             const kpi = this.data.kpi;
-            
+
             // Installations
             $('#kpi-installations').text(kpi.installations.value.toLocaleString());
             this.updateKPIChange('#kpi-installations-change', kpi.installations.change);
-            this.renderMiniTrend('kpi-installations-trend', kpi.installations.trend);
-            
+
             // Conversion Rate
             $('#kpi-conversion').text(kpi.conversion_rate.value + '%');
             this.updateKPIChange('#kpi-conversion-change', kpi.conversion_rate.change);
-            this.renderMiniTrend('kpi-conversion-trend', kpi.conversion_rate.trend);
-            
+
             // Active Users
             $('#kpi-active').text(kpi.active_users.value.toLocaleString());
             this.updateKPIChange('#kpi-active-change', kpi.active_users.change);
-            this.renderMiniTrend('kpi-active-trend', kpi.active_users.trend);
-            
+
             // Churn Rate
             $('#kpi-churn').text(kpi.churn_rate.value + '%');
             this.updateKPIChange('#kpi-churn-change', kpi.churn_rate.change, true);
-            this.renderMiniTrend('kpi-churn-trend', kpi.churn_rate.trend);
         },
         
         /**

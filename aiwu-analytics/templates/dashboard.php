@@ -78,7 +78,6 @@ if (!defined('ABSPATH')) {
                 <div class="kpi-value" id="kpi-installations">-</div>
                 <div class="kpi-change" id="kpi-installations-change">-</div>
             </div>
-            <canvas id="kpi-installations-trend" class="kpi-trend"></canvas>
         </div>
 
         <div class="kpi-card">
@@ -87,7 +86,6 @@ if (!defined('ABSPATH')) {
                 <div class="kpi-value" id="kpi-conversion">-</div>
                 <div class="kpi-change" id="kpi-conversion-change">-</div>
             </div>
-            <canvas id="kpi-conversion-trend" class="kpi-trend"></canvas>
         </div>
 
         <div class="kpi-card">
@@ -96,7 +94,6 @@ if (!defined('ABSPATH')) {
                 <div class="kpi-value" id="kpi-active">-</div>
                 <div class="kpi-change" id="kpi-active-change">-</div>
             </div>
-            <canvas id="kpi-active-trend" class="kpi-trend"></canvas>
         </div>
 
         <div class="kpi-card">
@@ -105,7 +102,6 @@ if (!defined('ABSPATH')) {
                 <div class="kpi-value" id="kpi-churn">-</div>
                 <div class="kpi-change negative" id="kpi-churn-change">-</div>
             </div>
-            <canvas id="kpi-churn-trend" class="kpi-trend"></canvas>
         </div>
     </div>
 
