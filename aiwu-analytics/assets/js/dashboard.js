@@ -175,8 +175,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 2.5,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
                         tooltip: { enabled: false }
@@ -256,8 +255,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 2.5,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             position: 'top',
@@ -317,8 +315,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1.8,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
                     },
@@ -338,7 +335,7 @@
                 }
             });
         },
-        
+
         /**
          * Render recent conversions table
          */
@@ -424,8 +421,7 @@
                 options: {
                     indexAxis: 'y',
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1.2,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
                     },
@@ -445,7 +441,7 @@
                 }
             });
         },
-        
+
         /**
          * Render feature tokens chart
          */
@@ -473,8 +469,7 @@
                 options: {
                     indexAxis: 'y',
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1.2,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
                         tooltip: {
@@ -502,7 +497,7 @@
                 }
             });
         },
-        
+
         /**
          * Render feature conversion chart
          */
@@ -529,8 +524,7 @@
                 options: {
                     indexAxis: 'y',
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1.2,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
                         tooltip: {
@@ -559,7 +553,7 @@
                 }
             });
         },
-        
+
         /**
          * Render churn charts
          */
@@ -613,8 +607,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1.5,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             position: 'right'
@@ -623,7 +616,7 @@
                 }
             });
         },
-        
+
         /**
          * Render churn timeline chart
          */
@@ -649,8 +642,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 2,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
                     },
@@ -670,7 +662,7 @@
                 }
             });
         },
-        
+
         /**
          * Render engagement charts
          */
@@ -719,8 +711,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1.5,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             display: false
@@ -739,7 +730,7 @@
                 }
             });
         },
-        
+
         /**
          * Render multi-feature usage chart
          */
@@ -763,8 +754,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1.8,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
                     },
@@ -812,8 +802,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1.8,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
                     },
