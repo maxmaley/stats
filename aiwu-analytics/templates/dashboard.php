@@ -117,8 +117,9 @@ if (!defined('ABSPATH')) {
     <div class="aiwu-section">
         <div class="section-header">
             <h2>Conversion Analysis</h2>
+            <p class="section-description">График показывает активации FREE версии и конверсии в PRO по дням. Каждый пользователь считается только один раз при его первой конверсии.</p>
         </div>
-        <div class="chart-container large" style="height: 400px !important; max-height: 400px !important; overflow: hidden !important;">
+        <div class="chart-container large" style="height: 500px !important; max-height: 500px !important; overflow: hidden !important;">
             <canvas id="conversion-timeline-chart"></canvas>
         </div>
     </div>
@@ -127,17 +128,18 @@ if (!defined('ABSPATH')) {
     <div class="aiwu-section">
         <div class="section-header">
             <h2>Feature Popularity</h2>
+            <p class="section-description">Анализ использования функций плагина. <strong>User Count:</strong> количество уникальных пользователей. <strong>Token Usage:</strong> общее количество использованных токенов. <strong>Conversion Rate:</strong> какой процент пользователей каждой функции в итоге перешли на PRO (показывает корреляцию, не причину).</p>
         </div>
         <div class="aiwu-grid-3">
-            <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
+            <div class="chart-card" style="height: 380px !important; max-height: 380px !important; overflow: hidden !important;">
                 <h4>By User Count</h4>
                 <canvas id="feature-users-chart"></canvas>
             </div>
-            <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
+            <div class="chart-card" style="height: 380px !important; max-height: 380px !important; overflow: hidden !important;">
                 <h4>By Token Usage</h4>
                 <canvas id="feature-tokens-chart"></canvas>
             </div>
-            <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
+            <div class="chart-card" style="height: 380px !important; max-height: 380px !important; overflow: hidden !important;">
                 <h4>Conversion Rate by Feature</h4>
                 <canvas id="feature-conversion-chart"></canvas>
             </div>
@@ -149,8 +151,9 @@ if (!defined('ABSPATH')) {
         <div class="aiwu-section">
             <div class="section-header">
                 <h3>Deactivation Reasons</h3>
+                <p class="section-description">Распределение причин деактивации плагина на основе выбранной причины при удалении.</p>
             </div>
-            <div class="chart-container" style="height: 300px !important; max-height: 300px !important; overflow: hidden !important;">
+            <div class="chart-container" style="height: 380px !important; max-height: 380px !important; overflow: hidden !important;">
                 <canvas id="churn-reasons-chart"></canvas>
             </div>
             <div class="churn-insight">
@@ -161,8 +164,9 @@ if (!defined('ABSPATH')) {
         <div class="aiwu-section">
             <div class="section-header">
                 <h3>Churn Timeline</h3>
+                <p class="section-description">Динамика деактиваций по дням. Churn Rate = (деактивации в периоде / активные пользователи на начало периода) × 100%.</p>
             </div>
-            <div class="chart-container" style="height: 300px !important; max-height: 300px !important; overflow: hidden !important;">
+            <div class="chart-container" style="height: 380px !important; max-height: 380px !important; overflow: hidden !important;">
                 <canvas id="churn-timeline-chart"></canvas>
             </div>
             <div class="churn-comparison">
@@ -182,9 +186,10 @@ if (!defined('ABSPATH')) {
     <div class="aiwu-section">
         <div class="section-header">
             <h2>User Engagement</h2>
+            <p class="section-description">Анализ активности пользователей. <strong>User Segments:</strong> группы по использованию токенов (Dead=0, Light=1-10K, Medium=10-100K, Heavy=100K+). <strong>Multi-Feature Usage:</strong> сколько разных функций использует каждый пользователь. <strong>API Providers:</strong> распределение по выбранным API провайдерам.</p>
         </div>
         <div class="aiwu-grid-3">
-            <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
+            <div class="chart-card" style="height: 380px !important; max-height: 380px !important; overflow: hidden !important;">
                 <h4>User Segments</h4>
                 <canvas id="user-segments-chart"></canvas>
                 <div class="segment-legend">
@@ -207,12 +212,12 @@ if (!defined('ABSPATH')) {
                 </div>
             </div>
 
-            <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
+            <div class="chart-card" style="height: 380px !important; max-height: 380px !important; overflow: hidden !important;">
                 <h4>Multi-Feature Usage</h4>
                 <canvas id="multi-feature-chart"></canvas>
             </div>
 
-            <div class="chart-card" style="height: 320px !important; max-height: 320px !important; overflow: hidden !important;">
+            <div class="chart-card" style="height: 380px !important; max-height: 380px !important; overflow: hidden !important;">
                 <h4>API Provider Distribution</h4>
                 <canvas id="api-providers-chart"></canvas>
             </div>
@@ -223,6 +228,7 @@ if (!defined('ABSPATH')) {
     <div class="aiwu-section">
         <div class="section-header">
             <h2>User Activity Details</h2>
+            <p class="section-description">Детальная информация по каждому пользователю: дата активации, текущий план (FREE/PRO определяется по последней записи), последняя активность, общее количество токенов и задач.</p>
             <div class="table-actions">
                 <input type="search" id="user-search" placeholder="Search by email..." class="table-search" />
                 <button id="export-csv" class="button">Export CSV</button>
