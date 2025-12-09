@@ -28,6 +28,7 @@
          */
         init: function() {
             this.bindEvents();
+            this.loadData(); // Load data on initialization
         },
         
         /**
