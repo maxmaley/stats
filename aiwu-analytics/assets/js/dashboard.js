@@ -45,13 +45,12 @@
         resetFilters: function() {
             const today = new Date();
             const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
-            
+
             $('#date_from').val(this.formatDate(thirtyDaysAgo));
             $('#date_to').val(this.formatDate(today));
             $('#quick_period').val('30');
             $('#plan_filter').val('all');
-            $('#feature_filter').val('all');
-            
+
             this.loadData();
         },
         
@@ -72,16 +71,15 @@
             const dateFrom = $('#date_from').val();
             const dateTo = $('#date_to').val();
             const plan = $('#plan_filter').val();
-            const feature = $('#feature_filter').val();
-            
+
             if (!dateFrom || !dateTo) {
                 alert('Please select valid date range');
                 return;
             }
-            
+
             // Show loading
             $('#aiwu-loading').show();
-            
+
             $.ajax({
                 url: aiwuAnalytics.ajaxUrl,
                 type: 'POST',
@@ -90,8 +88,7 @@
                     nonce: aiwuAnalytics.nonce,
                     date_from: dateFrom,
                     date_to: dateTo,
-                    plan: plan,
-                    feature: feature
+                    plan: plan
                 },
                 success: (response) => {
                     if (response.success) {

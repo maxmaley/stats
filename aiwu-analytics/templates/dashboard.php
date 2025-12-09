@@ -48,16 +48,6 @@ if (!defined('ABSPATH')) {
             </select>
         </div>
 
-        <div class="filter-group">
-            <label>Feature</label>
-            <select id="feature_filter" class="filter-input">
-                <option value="all">All Features</option>
-                <option value="chatbot">Chatbot</option>
-                <option value="bulk">Bulk Content</option>
-                <option value="workflow">Workflow Builder</option>
-            </select>
-        </div>
-        
         <div class="filter-actions">
             <button id="apply_filters" class="button button-primary">Apply Filters</button>
             <button id="reset_filters" class="button">Reset</button>
