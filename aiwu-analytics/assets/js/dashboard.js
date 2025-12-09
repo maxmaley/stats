@@ -37,20 +37,28 @@
             $('#apply_filters').on('click', () => this.loadData());
             $('#reset_filters').on('click', () => this.resetFilters());
             $('#export_csv').on('click', () => this.exportCSV());
+            $('#period_selector').on('change', () => this.handlePeriodChange());
         },
-        
+
+        /**
+         * Handle period selector change
+         */
+        handlePeriodChange: function() {
+            const period = $('#period_selector').val();
+            if (period === 'custom') {
+                $('#custom_date_range').show();
+            } else {
+                $('#custom_date_range').hide();
+                this.loadData(); // Auto-apply when selecting preset period
+            }
+        },
+
         /**
          * Reset filters to default
          */
         resetFilters: function() {
-            const today = new Date();
-            const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
-
-            $('#date_from').val(this.formatDate(thirtyDaysAgo));
-            $('#date_to').val(this.formatDate(today));
-            $('#quick_period').val('30');
-            $('#plan_filter').val('all');
-
+            $('#period_selector').val('30');
+            $('#custom_date_range').hide();
             this.loadData();
         },
         
@@ -63,18 +71,63 @@
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         },
+
+        /**
+         * Calculate date range based on period
+         */
+        calculatePeriodDates: function(period) {
+            const today = new Date();
+            let dateFrom, dateTo;
+
+            dateTo = this.formatDate(today);
+
+            switch(period) {
+                case '7':
+                    dateFrom = this.formatDate(new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000)));
+                    break;
+                case '30':
+                    dateFrom = this.formatDate(new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000)));
+                    break;
+                case '90':
+                    dateFrom = this.formatDate(new Date(today.getTime() - (90 * 24 * 60 * 60 * 1000)));
+                    break;
+                case 'this_month':
+                    dateFrom = this.formatDate(new Date(today.getFullYear(), today.getMonth(), 1));
+                    break;
+                case 'last_month':
+                    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    dateFrom = this.formatDate(lastMonth);
+                    dateTo = this.formatDate(new Date(today.getFullYear(), today.getMonth(), 0));
+                    break;
+                case 'this_year':
+                    dateFrom = this.formatDate(new Date(today.getFullYear(), 0, 1));
+                    break;
+                default:
+                    dateFrom = this.formatDate(new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000)));
+            }
+
+            return { from: dateFrom, to: dateTo };
+        },
         
         /**
          * Load analytics data via AJAX
          */
         loadData: function() {
-            const dateFrom = $('#date_from').val();
-            const dateTo = $('#date_to').val();
-            const plan = $('#plan_filter').val();
+            const period = $('#period_selector').val();
+            let dateFrom, dateTo;
 
-            if (!dateFrom || !dateTo) {
-                alert('Please select valid date range');
-                return;
+            if (period === 'custom') {
+                dateFrom = $('#date_from').val();
+                dateTo = $('#date_to').val();
+
+                if (!dateFrom || !dateTo) {
+                    alert('Please select both start and end dates');
+                    return;
+                }
+            } else {
+                const dates = this.calculatePeriodDates(period);
+                dateFrom = dates.from;
+                dateTo = dates.to;
             }
 
             // Show loading
@@ -87,8 +140,7 @@
                     action: 'aiwu_get_analytics_data',
                     nonce: aiwuAnalytics.nonce,
                     date_from: dateFrom,
-                    date_to: dateTo,
-                    plan: plan
+                    date_to: dateTo
                 },
                 success: (response) => {
                     if (response.success) {

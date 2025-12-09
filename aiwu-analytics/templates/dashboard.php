@@ -21,31 +21,24 @@ if (!defined('ABSPATH')) {
     <div class="aiwu-filters-panel">
         <div class="filter-group">
             <label>Period</label>
-            <div class="date-inputs">
-                <input type="date" id="date_from" class="filter-input" />
-                <span class="date-separator">to</span>
-                <input type="date" id="date_to" class="filter-input" />
-            </div>
-        </div>
-
-        <div class="filter-group">
-            <label>Quick Select</label>
-            <select id="quick_period" class="filter-input">
+            <select id="period_selector" class="filter-input">
                 <option value="7">Last 7 days</option>
                 <option value="30" selected>Last 30 days</option>
                 <option value="90">Last 90 days</option>
                 <option value="this_month">This month</option>
                 <option value="last_month">Last month</option>
+                <option value="this_year">This year</option>
+                <option value="custom">Custom period</option>
             </select>
         </div>
 
-        <div class="filter-group">
-            <label>Plan</label>
-            <select id="plan_filter" class="filter-input">
-                <option value="all">All Plans</option>
-                <option value="free">Free Only</option>
-                <option value="pro">Pro Only</option>
-            </select>
+        <div id="custom_date_range" class="filter-group" style="display: none;">
+            <label>Custom Date Range</label>
+            <div class="date-inputs">
+                <input type="date" id="date_from" class="filter-input" />
+                <span class="date-separator">to</span>
+                <input type="date" id="date_to" class="filter-input" />
+            </div>
         </div>
 
         <div class="filter-actions">
