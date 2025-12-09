@@ -206,10 +206,6 @@
                 console.error('Missing active_pro_users in KPI data');
                 $('#kpi-active-pro').text('0');
             }
-
-            // Churn Rate
-            $('#kpi-churn').text(kpi.churn_rate.value + '%');
-            this.updateKPIChange('#kpi-churn-change', kpi.churn_rate.change, true);
         },
         
         /**
@@ -458,177 +454,76 @@
          */
         renderFeatureCharts: function() {
             const features = this.data.features;
-            
-            // By user count
-            this.renderFeatureUserChart(features);
-            
-            // By tokens
-            this.renderFeatureTokensChart(features);
-            
-            // By conversion rate
-            this.renderFeatureConversionChart(features);
+
+            // Populate tables instead of charts
+            this.renderFeatureUsersTable(features);
+            this.renderFeatureTokensTable(features);
+            this.renderFeatureConversionTable();
         },
-        
+
         /**
-         * Render feature users chart
+         * Render feature users table
          */
-        renderFeatureUserChart: function(features) {
-            const ctx = this.getCanvas('feature-users-chart');
-            if (!ctx || !features) return;
+        renderFeatureUsersTable: function(features) {
+            if (!features) return;
 
-            if (this.charts.featureUsers) {
-                this.charts.featureUsers.destroy();
-            }
+            const tbody = $('#feature-users-table tbody');
+            tbody.empty();
 
-            // Take top 8 features
-            const top = features.slice(0, 8);
-            
-            this.charts.featureUsers = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: top.map(f => f.name),
-                    datasets: [{
-                        label: 'Users',
-                        data: top.map(f => f.user_count),
-                        backgroundColor: '#3b82f6',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            grid: {
-                                color: '#f1f5f9'
-                            }
-                        },
-                        y: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
+            features.forEach((feature) => {
+                const row = `
+                    <tr>
+                        <td>${feature.name}</td>
+                        <td>${feature.user_count.toLocaleString()}</td>
+                    </tr>
+                `;
+                tbody.append(row);
             });
         },
 
         /**
-         * Render feature tokens chart
+         * Render feature tokens table
          */
-        renderFeatureTokensChart: function(features) {
-            const ctx = this.getCanvas('feature-tokens-chart');
-            if (!ctx || !features) return;
+        renderFeatureTokensTable: function(features) {
+            if (!features) return;
 
-            if (this.charts.featureTokens) {
-                this.charts.featureTokens.destroy();
-            }
+            const tbody = $('#feature-tokens-table tbody');
+            tbody.empty();
 
-            // Take top 8 features
-            const top = features.slice(0, 8);
-            
-            this.charts.featureTokens = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: top.map(f => f.name),
-                    datasets: [{
-                        label: 'Tokens',
-                        data: top.map(f => f.total_tokens),
-                        backgroundColor: '#6366f1',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => {
-                                    return this.formatNumber(context.parsed.x) + ' tokens';
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            type: 'logarithmic',
-                            grid: {
-                                color: '#f1f5f9'
-                            }
-                        },
-                        y: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
+            // Sort by total tokens
+            const sortedByTokens = [...features].sort((a, b) => b.total_tokens - a.total_tokens);
+
+            sortedByTokens.forEach((feature) => {
+                const row = `
+                    <tr>
+                        <td>${feature.name}</td>
+                        <td>${this.formatNumber(feature.total_tokens)}</td>
+                    </tr>
+                `;
+                tbody.append(row);
             });
         },
 
         /**
-         * Render feature conversion chart
+         * Render feature conversion table
          */
-        renderFeatureConversionChart: function(features) {
-            const ctx = this.getCanvas('feature-conversion-chart');
-            if (!ctx || !features) return;
-
-            if (this.charts.featureConversion) {
-                this.charts.featureConversion.destroy();
-            }
-            
+        renderFeatureConversionTable: function() {
             const convData = this.data.conversion.by_feature;
-            
-            this.charts.featureConversion = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: convData.map(f => f.feature),
-                    datasets: [{
-                        label: 'Conversion Rate (%)',
-                        data: convData.map(f => f.conversion_rate),
-                        backgroundColor: '#48bb78',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => {
-                                    const item = convData[context.dataIndex];
-                                    return `${context.parsed.x}% (${item.converted_users}/${item.total_users})`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            max: 100,
-                            grid: {
-                                color: '#f1f5f9'
-                            }
-                        },
-                        y: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
+            if (!convData) return;
+
+            const tbody = $('#feature-conversion-table tbody');
+            tbody.empty();
+
+            convData.forEach((item) => {
+                const row = `
+                    <tr>
+                        <td>${item.feature}</td>
+                        <td>${item.total_users.toLocaleString()}</td>
+                        <td>${item.converted_users.toLocaleString()}</td>
+                        <td>${item.conversion_rate.toFixed(1)}%</td>
+                    </tr>
+                `;
+                tbody.append(row);
             });
         },
 

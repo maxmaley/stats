@@ -86,14 +86,6 @@ if (!defined('ABSPATH')) {
                 <div class="kpi-change" id="kpi-active-pro-change">-</div>
             </div>
         </div>
-
-        <div class="kpi-card">
-            <div class="kpi-content">
-                <div class="kpi-label">Churn Rate</div>
-                <div class="kpi-value" id="kpi-churn">-</div>
-                <div class="kpi-change negative" id="kpi-churn-change">-</div>
-            </div>
-        </div>
     </div>
 
     <!-- Conversion Timeline Section -->
@@ -113,18 +105,47 @@ if (!defined('ABSPATH')) {
             <h2>Feature Popularity</h2>
             <p class="section-description">Анализ использования функций плагина. <strong>User Count:</strong> количество уникальных пользователей. <strong>Token Usage:</strong> общее количество использованных токенов. <strong>Conversion Rate:</strong> какой процент пользователей каждой функции в итоге перешли на PRO (показывает корреляцию, не причину).</p>
         </div>
-        <div class="aiwu-grid-3">
-            <div class="chart-card" style="height: 380px !important; max-height: 380px !important; overflow: hidden !important;">
+
+        <div class="feature-tables-container">
+            <div class="feature-table-wrapper">
                 <h4>By User Count</h4>
-                <canvas id="feature-users-chart"></canvas>
+                <table class="feature-table" id="feature-users-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Users</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
-            <div class="chart-card" style="height: 380px !important; max-height: 380px !important; overflow: hidden !important;">
+
+            <div class="feature-table-wrapper">
                 <h4>By Token Usage</h4>
-                <canvas id="feature-tokens-chart"></canvas>
+                <table class="feature-table" id="feature-tokens-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Tokens</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
-            <div class="chart-card" style="height: 380px !important; max-height: 380px !important; overflow: hidden !important;">
+
+            <div class="feature-table-wrapper">
                 <h4>Conversion Rate by Feature</h4>
-                <canvas id="feature-conversion-chart"></canvas>
+                <table class="feature-table" id="feature-conversion-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Total Users</th>
+                            <th>Converted</th>
+                            <th>Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
     </div>
