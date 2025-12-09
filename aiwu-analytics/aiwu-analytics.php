@@ -3,7 +3,7 @@
  * Plugin Name: AIWU Analytics Dashboard
  * Plugin URI: https://aiwuplugin.com
  * Description: Comprehensive analytics dashboard for AIWU plugin usage, conversions, and user behavior
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: AIWU Team
  * Author URI: https://aiwuplugin.com
  * License: GPL v2 or later
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('AIWU_ANALYTICS_VERSION', '1.0.0');
+define('AIWU_ANALYTICS_VERSION', '1.0.1');
 define('AIWU_ANALYTICS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AIWU_ANALYTICS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
