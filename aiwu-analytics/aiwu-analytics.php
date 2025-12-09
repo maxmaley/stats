@@ -148,23 +148,21 @@ class AIWU_Analytics {
     public function ajax_get_analytics_data() {
         // Check nonce
         check_ajax_referer('aiwu_analytics_nonce', 'nonce');
-        
+
         // Check permissions
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Insufficient permissions');
             return;
         }
-        
+
         // Get filters from request
         $date_from = isset($_POST['date_from']) ? sanitize_text_field($_POST['date_from']) : '';
         $date_to = isset($_POST['date_to']) ? sanitize_text_field($_POST['date_to']) : '';
-        $plan = isset($_POST['plan']) ? sanitize_text_field($_POST['plan']) : 'all';
-        $feature = isset($_POST['feature']) ? sanitize_text_field($_POST['feature']) : 'all';
-        
+
         // Get analytics data
         $analytics = new AIWU_Analytics_Calculator();
-        $data = $analytics->get_dashboard_data($date_from, $date_to, $plan, $feature);
-        
+        $data = $analytics->get_dashboard_data($date_from, $date_to);
+
         // Return data
         wp_send_json_success($data);
     }

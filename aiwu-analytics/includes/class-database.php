@@ -1,404 +1,129 @@
 <?php
 /**
- * AIWU Analytics Database Class
- * 
- * Handles all database queries for analytics
+ * AIWU Analytics Database Class - MVP
+ *
+ * Simple and accurate queries for dashboard
  */
 
-// Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;
 }
 
 class AIWU_Analytics_Database {
-    
-    /**
-     * WordPress database object
-     */
+
     private $wpdb;
-    
-    /**
-     * Table names
-     */
     private $stats_table;
     private $details_table;
-    
-    /**
-     * Constructor
-     */
+
     public function __construct() {
         global $wpdb;
         $this->wpdb = $wpdb;
         $this->stats_table = $wpdb->prefix . 'lms_stats';
         $this->details_table = $wpdb->prefix . 'lms_stats_details';
     }
-    
-    /**
-     * Get total installations (unique activations)
-     */
-    public function get_total_installations($date_from = '', $date_to = '') {
-        $where = "WHERE mode = 1"; // mode=1 is activation
-        
-        if ($date_from && $date_to) {
-            $where .= $this->wpdb->prepare(" AND created BETWEEN %s AND %s", $date_from, $date_to);
-        }
-        
-        $query = "SELECT COUNT(DISTINCT email) as total FROM {$this->stats_table} {$where}";
-        return (int) $this->wpdb->get_var($query);
-    }
-    
-    /**
-     * Get active users (users with mode=0 stats in period)
-     * FIXED: Active = sent stats in period AND activated AND not deactivated after last activation
-     */
-    public function get_active_users($date_from = '', $date_to = '') {
-        if (empty($date_from) || empty($date_to)) {
-            // If no date range, count all users who ever sent stats and are still active
-            $query = "SELECT COUNT(DISTINCT s.email)
-                      FROM {$this->stats_table} s
-                      WHERE s.mode = 0
-                      AND EXISTS (
-                          SELECT 1 FROM {$this->stats_table} s2
-                          WHERE s2.email = s.email AND s2.mode = 1
-                      )
-                      AND NOT EXISTS (
-                          SELECT 1 FROM {$this->stats_table} s3
-                          WHERE s3.email = s.email
-                          AND s3.mode = 2
-                          AND s3.created > (
-                              SELECT MAX(created) FROM {$this->stats_table} s4
-                              WHERE s4.email = s.email AND s4.mode = 1
-                          )
-                      )";
-            return (int) $this->wpdb->get_var($query);
-        }
 
-        // Active users in period = sent stats in period AND not deactivated
+    /**
+     * KPI 1: Количество новых установок FREE
+     * mode=1 (activation) AND is_pro=0
+     */
+    public function get_new_free_installations($date_from, $date_to) {
         $query = $this->wpdb->prepare(
-            "SELECT COUNT(DISTINCT s.email) as total
-             FROM {$this->stats_table} s
-             WHERE s.mode = 0
-             AND s.created BETWEEN %s AND %s
-             AND EXISTS (
-                 SELECT 1 FROM {$this->stats_table} s2
-                 WHERE s2.email = s.email AND s2.mode = 1
-             )
-             AND NOT EXISTS (
-                 SELECT 1 FROM {$this->stats_table} s3
-                 WHERE s3.email = s.email
-                 AND s3.mode = 2
-                 AND s3.created > (
-                     SELECT MAX(created) FROM {$this->stats_table} s4
-                     WHERE s4.email = s.email AND s4.mode = 1
-                 )
-             )",
-            $date_from, $date_to
-        );
-
-        return (int) $this->wpdb->get_var($query);
-    }
-    
-    /**
-     * Get conversion rate Free->Pro
-     * FIXED: Proper conversion = conversions in period / free users at start of period
-     */
-    public function get_conversion_data($date_from = '', $date_to = '') {
-        if (empty($date_from) || empty($date_to)) {
-            return array(
-                'free_users_at_start' => 0,
-                'conversions' => 0,
-                'conversion_rate' => 0
-            );
-        }
-
-        // Free users at start of period = activated as Free before period AND never converted to Pro before period
-        $free_users_at_start = (int) $this->wpdb->get_var($this->wpdb->prepare(
-            "SELECT COUNT(DISTINCT email) FROM {$this->stats_table}
-             WHERE email IN (
-                 SELECT email FROM {$this->stats_table} WHERE mode = 1 AND is_pro = 0 AND created < %s
-             )
-             AND email NOT IN (
-                 SELECT email FROM {$this->stats_table} WHERE is_pro = 1 AND created < %s
-             )",
-            $date_from, $date_from
-        ));
-
-        // Conversions in period = first appearance of is_pro=1 in period (after having is_pro=0 before)
-        $conversions = (int) $this->wpdb->get_var($this->wpdb->prepare(
-            "SELECT COUNT(DISTINCT s1.email)
-             FROM {$this->stats_table} s1
-             WHERE s1.is_pro = 1
-             AND s1.created BETWEEN %s AND %s
-             AND EXISTS (
-                 SELECT 1 FROM {$this->stats_table} s2
-                 WHERE s2.email = s1.email
-                 AND s2.is_pro = 0
-                 AND s2.created < s1.created
-             )
-             AND NOT EXISTS (
-                 SELECT 1 FROM {$this->stats_table} s3
-                 WHERE s3.email = s1.email
-                 AND s3.is_pro = 1
-                 AND s3.created < %s
-             )",
-            $date_from, $date_to, $date_from
-        ));
-
-        $conversion_rate = $free_users_at_start > 0 ? ($conversions / $free_users_at_start) * 100 : 0;
-
-        // Validate: conversion rate should never exceed 100%
-        if ($conversion_rate > 100) {
-            error_log('AIWU Analytics: Invalid conversion rate calculated: ' . $conversion_rate);
-            $conversion_rate = 100;
-        }
-
-        return array(
-            'free_users_at_start' => $free_users_at_start,
-            'conversions' => $conversions,
-            'conversion_rate' => round($conversion_rate, 2)
-        );
-    }
-    
-    /**
-     * Get churn rate
-     * FIXED: Proper churn calculation = deactivations in period / active users at start of period
-     */
-    public function get_churn_rate($date_from = '', $date_to = '') {
-        if (empty($date_from) || empty($date_to)) {
-            return array(
-                'active_at_start' => 0,
-                'deactivations' => 0,
-                'churn_rate' => 0
-            );
-        }
-
-        // Active users at start of period = activated before period start AND not deactivated before period start
-        $active_at_start = (int) $this->wpdb->get_var($this->wpdb->prepare(
-            "SELECT COUNT(DISTINCT email) FROM {$this->stats_table}
-             WHERE email IN (
-                 SELECT email FROM {$this->stats_table} WHERE mode = 1 AND created < %s
-             )
-             AND email NOT IN (
-                 SELECT email FROM {$this->stats_table} WHERE mode = 2 AND created < %s
-             )",
-            $date_from, $date_from
-        ));
-
-        // Deactivations in period
-        $deactivations = (int) $this->wpdb->get_var($this->wpdb->prepare(
-            "SELECT COUNT(DISTINCT email) FROM {$this->stats_table}
-             WHERE mode = 2 AND created BETWEEN %s AND %s",
-            $date_from, $date_to
-        ));
-
-        $churn_rate = $active_at_start > 0 ? ($deactivations / $active_at_start) * 100 : 0;
-
-        // Validate: churn rate should never exceed 100%
-        if ($churn_rate > 100) {
-            error_log('AIWU Analytics: Invalid churn rate calculated: ' . $churn_rate);
-            $churn_rate = 100;
-        }
-
-        return array(
-            'active_at_start' => $active_at_start,
-            'deactivations' => $deactivations,
-            'churn_rate' => round($churn_rate, 2)
-        );
-    }
-    
-    /**
-     * Get activations timeline
-     */
-    public function get_activations_timeline($date_from, $date_to) {
-        $query = $this->wpdb->prepare(
-            "SELECT DATE(created) as date, 
-                    SUM(CASE WHEN is_pro = 0 THEN 1 ELSE 0 END) as free_activations,
-                    SUM(CASE WHEN is_pro = 1 THEN 1 ELSE 0 END) as pro_activations,
-                    COUNT(*) as total
+            "SELECT COUNT(*)
              FROM {$this->stats_table}
-             WHERE mode = 1 
+             WHERE mode = 1
+             AND is_pro = 0
+             AND created BETWEEN %s AND %s",
+            $date_from,
+            $date_to
+        );
+        return (int) $this->wpdb->get_var($query);
+    }
+
+    /**
+     * KPI 2: Активные уникальные Free (у которых НЕТ Pro)
+     * Юзеры которые отправили stats И никогда не имели is_pro=1
+     */
+    public function get_active_free_only_users($date_from, $date_to) {
+        $query = $this->wpdb->prepare(
+            "SELECT COUNT(DISTINCT email)
+             FROM {$this->stats_table}
+             WHERE mode = 0
+             AND created BETWEEN %s AND %s
+             AND email NOT IN (
+                 SELECT DISTINCT email
+                 FROM {$this->stats_table}
+                 WHERE is_pro = 1
+             )",
+            $date_from,
+            $date_to
+        );
+        return (int) $this->wpdb->get_var($query);
+    }
+
+    /**
+     * KPI 3: Активные уникальные Pro (у которых есть и Free и Pro)
+     * Юзеры которые отправили stats И имели is_pro=1
+     */
+    public function get_active_pro_users($date_from, $date_to) {
+        $query = $this->wpdb->prepare(
+            "SELECT COUNT(DISTINCT email)
+             FROM {$this->stats_table}
+             WHERE mode = 0
+             AND created BETWEEN %s AND %s
+             AND email IN (
+                 SELECT DISTINCT email
+                 FROM {$this->stats_table}
+                 WHERE is_pro = 1
+             )",
+            $date_from,
+            $date_to
+        );
+        return (int) $this->wpdb->get_var($query);
+    }
+
+    /**
+     * Тренд: Free установки по дням
+     */
+    public function get_free_installations_timeline($date_from, $date_to) {
+        $query = $this->wpdb->prepare(
+            "SELECT DATE(created) as date, COUNT(*) as count
+             FROM {$this->stats_table}
+             WHERE mode = 1
+             AND is_pro = 0
              AND created BETWEEN %s AND %s
              GROUP BY DATE(created)
              ORDER BY date ASC",
             $date_from,
             $date_to
         );
-        
         return $this->wpdb->get_results($query, ARRAY_A);
     }
-    
+
     /**
-     * Get conversion timeline
+     * Тренд: Pro установки по дням
      */
-    public function get_conversion_timeline($date_from, $date_to) {
-        // OPTIMIZED: Use subquery to find first conversion date per user, then count by date
-        // This is much faster than NOT EXISTS for each row
+    public function get_pro_installations_timeline($date_from, $date_to) {
         $query = $this->wpdb->prepare(
-            "SELECT DATE(first_pro.first_pro_date) as date,
-                    COUNT(DISTINCT first_pro.email) as conversions
-             FROM (
-                 SELECT s1.email,
-                        MIN(s1.created) as first_pro_date
-                 FROM {$this->stats_table} s1
-                 WHERE s1.is_pro = 1
-                 AND EXISTS (
-                     SELECT 1 FROM {$this->stats_table} s2
-                     WHERE s2.email = s1.email
-                     AND s2.is_pro = 0
-                     AND s2.created < s1.created
-                 )
-                 GROUP BY s1.email
-             ) first_pro
-             WHERE first_pro.first_pro_date BETWEEN %s AND %s
-             GROUP BY DATE(first_pro.first_pro_date)
+            "SELECT DATE(created) as date, COUNT(*) as count
+             FROM {$this->stats_table}
+             WHERE mode = 1
+             AND is_pro = 1
+             AND created BETWEEN %s AND %s
+             GROUP BY DATE(created)
              ORDER BY date ASC",
             $date_from,
             $date_to
         );
-
         return $this->wpdb->get_results($query, ARRAY_A);
     }
-    
+
     /**
-     * Get time to conversion distribution
-     * FIXED: Find FIRST is_pro=1 record, not any mode=0 or mode=1 record
+     * Фичи: по уникальным юзерам
      */
-    public function get_time_to_conversion() {
-        $query = "SELECT
-                    s1.email,
-                    MIN(s1.created) as free_date,
-                    (SELECT MIN(created) FROM {$this->stats_table}
-                     WHERE email = s1.email AND is_pro = 1) as pro_date,
-                    DATEDIFF(
-                        (SELECT MIN(created) FROM {$this->stats_table}
-                         WHERE email = s1.email AND is_pro = 1),
-                        MIN(s1.created)
-                    ) as days_to_convert
-                  FROM {$this->stats_table} s1
-                  WHERE s1.is_pro = 0 AND s1.mode = 1
-                  AND EXISTS (
-                      SELECT 1 FROM {$this->stats_table}
-                      WHERE email = s1.email AND is_pro = 1
-                  )
-                  GROUP BY s1.email
-                  HAVING days_to_convert >= 0";
-
-        $results = $this->wpdb->get_results($query, ARRAY_A);
-
-        // Group into buckets
-        $buckets = array(
-            '0-1' => 0,
-            '1-3' => 0,
-            '3-7' => 0,
-            '7-14' => 0,
-            '14-30' => 0,
-            '30+' => 0
-        );
-
-        foreach ($results as $row) {
-            $days = (int) $row['days_to_convert'];
-
-            if ($days <= 1) {
-                $buckets['0-1']++;
-            } elseif ($days <= 3) {
-                $buckets['1-3']++;
-            } elseif ($days <= 7) {
-                $buckets['3-7']++;
-            } elseif ($days <= 14) {
-                $buckets['7-14']++;
-            } elseif ($days <= 30) {
-                $buckets['14-30']++;
-            } else {
-                $buckets['30+']++;
-            }
-        }
-
-        return $buckets;
-    }
-    
-    /**
-     * Get recent conversions with details
-     * FIXED: Find FIRST is_pro=1 record, not any mode=0 or mode=1 record
-     */
-    public function get_recent_conversions($limit = 20) {
-        $query = $this->wpdb->prepare(
-            "SELECT
-                s1.email,
-                MIN(s1.created) as free_date,
-                (SELECT MIN(created) FROM {$this->stats_table}
-                 WHERE email = s1.email AND is_pro = 1) as pro_date,
-                DATEDIFF(
-                    (SELECT MIN(created) FROM {$this->stats_table}
-                     WHERE email = s1.email AND is_pro = 1),
-                    MIN(s1.created)
-                ) as days_to_convert,
-                (SELECT id FROM {$this->stats_table}
-                 WHERE email = s1.email AND is_pro = 1
-                 ORDER BY created ASC LIMIT 1) as stats_id
-             FROM {$this->stats_table} s1
-             WHERE s1.is_pro = 0 AND s1.mode = 1
-             AND EXISTS (
-                 SELECT 1 FROM {$this->stats_table}
-                 WHERE email = s1.email AND is_pro = 1
-             )
-             GROUP BY s1.email
-             ORDER BY pro_date DESC
-             LIMIT %d",
-            $limit
-        );
-
-        $conversions = $this->wpdb->get_results($query, ARRAY_A);
-
-        // Get details for each conversion
-        foreach ($conversions as &$conversion) {
-            $conversion['details'] = $this->get_user_stats_at_conversion($conversion['stats_id']);
-        }
-
-        return $conversions;
-    }
-    
-    /**
-     * Get user stats at specific stats_id
-     */
-    private function get_user_stats_at_conversion($stats_id) {
-        $query = $this->wpdb->prepare(
-            "SELECT name, val_int 
-             FROM {$this->details_table} 
-             WHERE st_id = %d 
-             AND (name LIKE 'tokens_%' OR name = 'cnt_tasks')",
-            $stats_id
-        );
-        
-        $results = $this->wpdb->get_results($query, ARRAY_A);
-        
-        $data = array(
-            'cnt_tasks' => 0,
-            'tokens_chatbots' => 0,
-            'tokens_postscreate' => 0,
-            'tokens_workflow' => 0,
-            'tokens_total' => 0
-        );
-        
-        foreach ($results as $row) {
-            if ($row['name'] === 'cnt_tasks') {
-                $data['cnt_tasks'] = (int) $row['val_int'];
-            } elseif (strpos($row['name'], 'tokens_') === 0) {
-                $data[$row['name']] = (int) $row['val_int'];
-                $data['tokens_total'] += (int) $row['val_int'];
-            }
-        }
-        
-        return $data;
-    }
-    
-    /**
-     * Get feature usage statistics
-     * FIXED: Count unique emails instead of st_id (records)
-     */
-    public function get_feature_usage() {
+    public function get_features_by_users() {
         $features = array(
-            'tokens_postscreate' => 'Bulk Content',
             'tokens_chatbots' => 'Chatbot',
+            'tokens_postscreate' => 'Bulk Content',
             'tokens_workflow' => 'Workflow Builder',
             'tokens_magictext' => 'Magic Text',
             'tokens_postsrss' => 'Posts RSS',
@@ -413,149 +138,72 @@ class AIWU_Analytics_Database {
         $results = array();
 
         foreach ($features as $token_name => $feature_name) {
-            $query = $this->wpdb->prepare(
-                "SELECT
-                    COUNT(DISTINCT s.email) as user_count,
-                    SUM(d.val_int) as total_tokens
+            $count = $this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT COUNT(DISTINCT s.email)
                  FROM {$this->details_table} d
                  JOIN {$this->stats_table} s ON d.st_id = s.id
                  WHERE d.name = %s AND d.val_int > 0",
                 $token_name
-            );
-
-            $data = $this->wpdb->get_row($query, ARRAY_A);
-
-            // Handle NULL result (no data for this feature)
-            $user_count = $data ? (int) $data['user_count'] : 0;
-            $total_tokens = $data ? (int) $data['total_tokens'] : 0;
+            ));
 
             $results[] = array(
                 'feature' => $feature_name,
-                'token_name' => $token_name,
-                'user_count' => $user_count,
-                'total_tokens' => $total_tokens
+                'count' => (int) $count
             );
         }
 
-        // Sort by user count descending
         usort($results, function($a, $b) {
-            return $b['user_count'] - $a['user_count'];
+            return $b['count'] - $a['count'];
         });
 
         return $results;
     }
-    
+
     /**
-     * Get feature conversion rates
-     * FIXED: Count unique emails instead of st_id (records)
+     * Фичи: по токенам
      */
-    public function get_feature_conversion_rates() {
+    public function get_features_by_tokens() {
         $features = array(
             'tokens_chatbots' => 'Chatbot',
             'tokens_postscreate' => 'Bulk Content',
-            'tokens_workflow' => 'Workflow Builder'
+            'tokens_workflow' => 'Workflow Builder',
+            'tokens_magictext' => 'Magic Text',
+            'tokens_postsrss' => 'Posts RSS',
+            'tokens_training' => 'Training',
+            'tokens_postsfields' => 'Post Fields',
+            'tokens_postslinks' => 'Posts Links',
+            'tokens_forms' => 'Forms',
+            'tokens_postsaskai' => 'Ask AI',
+            'tokens_productsfields' => 'Product Fields'
         );
 
         $results = array();
 
         foreach ($features as $token_name => $feature_name) {
-            // Unique users who used this feature
-            $total_users = $this->wpdb->get_var($this->wpdb->prepare(
-                "SELECT COUNT(DISTINCT s.email)
-                 FROM {$this->details_table} d
-                 JOIN {$this->stats_table} s ON d.st_id = s.id
-                 WHERE d.name = %s AND d.val_int > 0",
+            $tokens = $this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT SUM(val_int)
+                 FROM {$this->details_table}
+                 WHERE name = %s AND val_int > 0",
                 $token_name
             ));
-
-            // Unique users who used this feature AND converted to Pro
-            $converted_users = $this->wpdb->get_var($this->wpdb->prepare(
-                "SELECT COUNT(DISTINCT s.email)
-                 FROM {$this->details_table} d
-                 JOIN {$this->stats_table} s ON d.st_id = s.id
-                 WHERE d.name = %s
-                 AND d.val_int > 0
-                 AND EXISTS (
-                     SELECT 1 FROM {$this->stats_table} s2
-                     WHERE s2.email = s.email AND s2.is_pro = 1
-                 )",
-                $token_name
-            ));
-
-            $conversion_rate = $total_users > 0 ? ($converted_users / $total_users) * 100 : 0;
 
             $results[] = array(
                 'feature' => $feature_name,
-                'total_users' => (int) $total_users,
-                'converted_users' => (int) $converted_users,
-                'conversion_rate' => round($conversion_rate, 2)
+                'tokens' => (int) $tokens
             );
         }
 
+        usort($results, function($a, $b) {
+            return $b['tokens'] - $a['tokens'];
+        });
+
         return $results;
     }
-    
+
     /**
-     * Get deactivation reasons
+     * API провайдеры: по уникальным юзерам
      */
-    public function get_deactivation_reasons() {
-        $query = "SELECT 
-                    d.val_int as reason_code,
-                    d.val_text as reason_text,
-                    COUNT(*) as count
-                  FROM {$this->details_table} d
-                  WHERE d.name = 'reason'
-                  GROUP BY d.val_int, d.val_text
-                  ORDER BY count DESC";
-        
-        $results = $this->wpdb->get_results($query, ARRAY_A);
-        
-        // Map reason codes to text
-        $reason_map = array(
-            -1 => 'Not specified',
-            0 => 'Requires third-party APIs',
-            1 => 'Difficult to use',
-            2 => 'Lacking necessary features',
-            3 => 'Current features are not good enough',
-            4 => 'Missing features in the free version',
-            5 => 'Other'
-        );
-        
-        $formatted = array();
-        foreach ($results as $row) {
-            $code = (int) $row['reason_code'];
-            $formatted[] = array(
-                'reason' => isset($reason_map[$code]) ? $reason_map[$code] : $row['reason_text'],
-                'count' => (int) $row['count']
-            );
-        }
-        
-        return $formatted;
-    }
-    
-    /**
-     * Get churn timeline
-     */
-    public function get_churn_timeline($date_from, $date_to) {
-        $query = $this->wpdb->prepare(
-            "SELECT DATE(created) as date, COUNT(*) as deactivations
-             FROM {$this->stats_table}
-             WHERE mode = 2
-             AND created BETWEEN %s AND %s
-             GROUP BY DATE(created)
-             ORDER BY date ASC",
-            $date_from,
-            $date_to
-        );
-        
-        return $this->wpdb->get_results($query, ARRAY_A);
-    }
-    
-    /**
-     * Get API provider distribution
-     * FIXED: Count unique emails instead of st_id (records)
-     */
-    public function get_api_provider_distribution() {
+    public function get_api_providers() {
         $providers = array(
             'apikey' => 'OpenAI',
             'gemini_api_key' => 'Gemini',
@@ -579,53 +227,61 @@ class AIWU_Analytics_Database {
             );
         }
 
+        usort($results, function($a, $b) {
+            return $b['count'] - $a['count'];
+        });
+
         return $results;
     }
-    
+
     /**
-     * Get detailed user activity
-     * FIXED: Get plan from latest record, not MAX which always returns 'Pro' if user ever had Pro
+     * Причины деактивации
      */
-    public function get_user_activity($limit = 50, $offset = 0) {
-        $query = $this->wpdb->prepare(
-            "SELECT
-                s.email,
-                MIN(CASE WHEN s.mode = 1 THEN s.created END) as activated,
-                (SELECT CASE WHEN is_pro = 1 THEN 'Pro' ELSE 'Free' END
-                 FROM {$this->stats_table}
-                 WHERE email = s.email
-                 ORDER BY created DESC LIMIT 1) as plan,
-                MAX(s.created) as last_activity
-             FROM {$this->stats_table} s
-             GROUP BY s.email
-             ORDER BY last_activity DESC
-             LIMIT %d OFFSET %d",
-            $limit,
-            $offset
+    public function get_deactivation_reasons() {
+        $reason_map = array(
+            -1 => 'Not specified',
+            0 => 'Requires third-party APIs',
+            1 => 'Difficult to use',
+            2 => 'Lacking necessary features',
+            3 => 'Current features not good enough',
+            4 => 'Missing features in free version',
+            5 => 'Other'
         );
 
-        $users = $this->wpdb->get_results($query, ARRAY_A);
+        $query = "SELECT d.val_int as reason_code, COUNT(*) as count
+                  FROM {$this->details_table} d
+                  WHERE d.name = 'reason'
+                  GROUP BY d.val_int
+                  ORDER BY count DESC";
 
-        // Get details for each user
-        foreach ($users as &$user) {
-            // Get latest stats
-            $latest_stats = $this->wpdb->get_var($this->wpdb->prepare(
-                "SELECT id FROM {$this->stats_table}
-                 WHERE email = %s AND mode = 0
-                 ORDER BY created DESC LIMIT 1",
-                $user['email']
-            ));
+        $raw_results = $this->wpdb->get_results($query, ARRAY_A);
 
-            if ($latest_stats) {
-                $user['stats'] = $this->get_user_stats_at_conversion($latest_stats);
-            } else {
-                $user['stats'] = array(
-                    'cnt_tasks' => 0,
-                    'tokens_total' => 0
-                );
-            }
+        $results = array();
+        foreach ($raw_results as $row) {
+            $code = (int) $row['reason_code'];
+            $results[] = array(
+                'reason' => isset($reason_map[$code]) ? $reason_map[$code] : 'Unknown',
+                'count' => (int) $row['count']
+            );
         }
 
-        return $users;
+        return $results;
+    }
+
+    /**
+     * Тренд: деактивации по дням
+     */
+    public function get_deactivations_timeline($date_from, $date_to) {
+        $query = $this->wpdb->prepare(
+            "SELECT DATE(created) as date, COUNT(*) as count
+             FROM {$this->stats_table}
+             WHERE mode = 2
+             AND created BETWEEN %s AND %s
+             GROUP BY DATE(created)
+             ORDER BY date ASC",
+            $date_from,
+            $date_to
+        );
+        return $this->wpdb->get_results($query, ARRAY_A);
     }
 }
